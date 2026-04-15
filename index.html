@@ -120,6 +120,68 @@
       <div class="sidebar-section sidebar-section-bottom">
         <button class="btn-danger" id="btn-clear-all">Clear Canvas</button>
       </div>
+
+      <!-- Divider -->
+      <div class="sidebar-divider"></div>
+
+      <!-- Upload Equipment -->
+      <div class="sidebar-section">
+        <h3 class="sidebar-section-title">Upload Equipment</h3>
+        <div class="upload-section" id="upload-section">
+          <!-- Drop Zone -->
+          <div class="upload-dropzone" id="upload-dropzone">
+            <svg class="upload-dropzone-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <div class="upload-dropzone-text">
+              <strong>Drop image</strong> or click to browse
+            </div>
+            <input type="file" id="upload-file" accept="image/*" />
+          </div>
+
+          <!-- Preview -->
+          <div class="upload-preview" id="upload-preview">
+            <img id="upload-preview-img" src="" alt="Preview" />
+            <button class="upload-preview-remove" id="upload-preview-remove">&times;</button>
+          </div>
+
+          <!-- Details Form -->
+          <div class="upload-form-grid">
+            <div class="form-row form-row-full">
+              <label for="upload-name">Name</label>
+              <input type="text" id="upload-name" placeholder="e.g. ULXD4Q" />
+            </div>
+            <div class="form-row">
+              <label for="upload-brand">Brand</label>
+              <input type="text" id="upload-brand" placeholder="e.g. Shure" />
+            </div>
+            <div class="form-row">
+              <label for="upload-height">Height (U)</label>
+              <input type="number" id="upload-height" min="1" max="48" value="1" />
+            </div>
+            <div class="form-row form-row-full">
+              <label for="upload-category">Category</label>
+              <select id="upload-category">
+                <option value="effects">Effects</option>
+                <option value="power">Power</option>
+                <option value="amplifier">Amplifier</option>
+                <option value="wireless">Wireless</option>
+                <option value="mixer">Mixer</option>
+                <option value="interface">Interface</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Processing indicator -->
+          <div class="upload-processing" id="upload-processing">
+            <div class="upload-spinner"></div>
+            <span>Processing image...</span>
+          </div>
+
+          <button class="btn-primary" id="btn-upload-add">Process &amp; Add to Catalog</button>
+        </div>
+      </div>
     </div>
   </aside>
 

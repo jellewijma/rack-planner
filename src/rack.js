@@ -84,9 +84,16 @@ export function createEquipmentElement(eqData, x, y) {
     el.style.height = `${height}px`;
     el.style.background = eqData.color || '#2a2a40';
 
-    if (eqData.image) {
+    // Determine image source: uploaded data URL takes priority, then file path
+    const imageSrc = eqData.imageDataUrl
+        ? eqData.imageDataUrl
+        : eqData.image
+            ? `${import.meta.env.BASE_URL}images/equipment/${eqData.image}`
+            : null;
+
+    if (imageSrc) {
         el.innerHTML = `
-      <img class="rack-equipment-image" src="${import.meta.env.BASE_URL}images/equipment/${eqData.image}" alt="${eqData.brand} ${eqData.name}" draggable="false" />
+      <img class="rack-equipment-image" src="${imageSrc}" alt="${eqData.brand} ${eqData.name}" draggable="false" />
       <div class="rack-equipment-label rack-equipment-label-overlay">
         <span class="rack-equipment-name">${eqData.name}</span>
         <span class="rack-equipment-brand">${eqData.brand} · ${eqData.heightU}U</span>

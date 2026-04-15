@@ -19,6 +19,7 @@ import {
     SLOT_HEIGHT,
 } from './rack.js';
 import { saveState, loadState, clearState, exportAsPng, downloadDataUrl } from './storage.js';
+import { initUploadUI, loadUploadedEquipment, saveUploadedEquipment } from './upload.js';
 import equipmentData from './data/equipment.json';
 
 // ─── State ──────────────────────────────────────────────
@@ -46,6 +47,11 @@ canvas.onZoomChange = (zoom) => {
 
 // ─── Catalog ────────────────────────────────────────────
 const catalog = new Catalog(equipmentData, equipmentListEl, searchEl, categoryTabsEl);
+
+// Load previously uploaded equipment from localStorage
+const uploadedEquipment = loadUploadedEquipment();
+uploadedEquipment.forEach(eq => catalog.addEquipment(eq));
+
 catalog.onAddItem = (itemData) => {
     addItemToCanvas(itemData);
     showToast(`Added ${itemData.name}`);
@@ -246,8 +252,10 @@ function hideContextMenu() {
 
 // ─── Sidebar Toggle ─────────────────────────────────────
 let sidebarOpen = false;
+const isDesktop = () => window.innerWidth >= 1024;
 
 function toggleSidebar() {
+    if (isDesktop()) return; // Sidebar is always open on desktop
     sidebarOpen = !sidebarOpen;
     sidebarEl.classList.toggle('sidebar-open', sidebarOpen);
     sidebarEl.classList.toggle('sidebar-closed', !sidebarOpen);
@@ -256,10 +264,38 @@ function toggleSidebar() {
 
 fabEl.addEventListener('click', toggleSidebar);
 
-// Close sidebar when clicking canvas
+// Close sidebar when clicking canvas (mobile only)
 viewportEl.addEventListener('pointerdown', (e) => {
-    if (e.target === canvasEl && sidebarOpen) {
+    if (e.target === canvasEl && sidebarOpen && !isDesktop()) {
         toggleSidebar();
+    }
+});
+
+// Auto-open sidebar on desktop
+if (isDesktop()) {
+    sidebarEl.classList.add('sidebar-open');
+    sidebarEl.classList.remove('sidebar-closed');
+    sidebarOpen = true;
+}
+
+// ─── Upload Tool ────────────────────────────────────────
+initUploadUI({
+    onEquipmentAdded: (eqData) => {
+        // Add to catalog
+        catalog.addEquipment(eqData);
+
+        // Persist in localStorage
+        const saved = loadUploadedEquipment();
+        saved.push(eqData);
+        saveUploadedEquipment(saved);
+
+        // Add to canvas
+        addItemToCanvas(eqData);
+        showToast(`Added ${eqData.brand} ${eqData.name}`, 'success');
+        scheduleAutoSave();
+    },
+    onError: (msg) => {
+        showToast(msg, 'error');
     }
 });
 

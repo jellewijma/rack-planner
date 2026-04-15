@@ -63,9 +63,15 @@ export class Catalog {
             el.className = 'equipment-item';
             el.dataset.equipmentId = item.id;
 
-            const thumbnailHtml = item.image
-                ? `<img class="eq-thumbnail" src="${import.meta.env.BASE_URL}images/equipment/${item.image}" alt="${item.name}" draggable="false" />`
-                : `<div class="eq-color-dot" style="background: ${item.color}"></div>`;
+            // Determine thumbnail: data URL (uploaded) > file path > color dot
+            let thumbnailHtml;
+            if (item.imageDataUrl) {
+                thumbnailHtml = `<img class="eq-thumbnail" src="${item.imageDataUrl}" alt="${item.name}" draggable="false" />`;
+            } else if (item.image) {
+                thumbnailHtml = `<img class="eq-thumbnail" src="${import.meta.env.BASE_URL}images/equipment/${item.image}" alt="${item.name}" draggable="false" />`;
+            } else {
+                thumbnailHtml = `<div class="eq-color-dot" style="background: ${item.color}"></div>`;
+            }
 
             el.innerHTML = `
         ${thumbnailHtml}
@@ -84,5 +90,14 @@ export class Catalog {
 
     getItemById(id) {
         return this.allItems.find(i => i.id === id) || null;
+    }
+
+    /**
+     * Add a new equipment item dynamically (e.g. from upload).
+     */
+    addEquipment(eqData) {
+        this.equipment.push(eqData);
+        this.allItems.push(eqData);
+        this.render();
     }
 }
