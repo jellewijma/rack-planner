@@ -86,7 +86,7 @@ export function createEquipmentElement(eqData, x, y) {
 
     if (eqData.image) {
         el.innerHTML = `
-      <img class="rack-equipment-image" src="/images/equipment/${eqData.image}" alt="${eqData.brand} ${eqData.name}" draggable="false" />
+      <img class="rack-equipment-image" src="${import.meta.env.BASE_URL}images/equipment/${eqData.image}" alt="${eqData.brand} ${eqData.name}" draggable="false" />
       <div class="rack-equipment-label rack-equipment-label-overlay">
         <span class="rack-equipment-name">${eqData.name}</span>
         <span class="rack-equipment-brand">${eqData.brand} · ${eqData.heightU}U</span>

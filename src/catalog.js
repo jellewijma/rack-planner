@@ -64,7 +64,7 @@ export class Catalog {
             el.dataset.equipmentId = item.id;
 
             const thumbnailHtml = item.image
-                ? `<img class="eq-thumbnail" src="/images/equipment/${item.image}" alt="${item.name}" draggable="false" />`
+                ? `<img class="eq-thumbnail" src="${import.meta.env.BASE_URL}images/equipment/${item.image}" alt="${item.name}" draggable="false" />`
                 : `<div class="eq-color-dot" style="background: ${item.color}"></div>`;
 
             el.innerHTML = `
