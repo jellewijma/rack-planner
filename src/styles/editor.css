@@ -1,4 +1,11 @@
 /* ===== EDITOR LAYOUT ===== */
+
+/* Override global overflow:hidden so the editor can scroll */
+body:has(.editor-page) {
+    overflow: auto;
+    height: auto;
+}
+
 .editor-page {
     display: flex;
     flex-direction: column;
