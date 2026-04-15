@@ -19,7 +19,7 @@ import {
     SLOT_HEIGHT,
 } from './rack.js';
 import { saveState, loadState, clearState, exportAsPng, downloadDataUrl } from './storage.js';
-import { initUploadUI, loadUploadedEquipment, saveUploadedEquipment } from './upload.js';
+import { loadUploadedEquipment } from './upload.js';
 import equipmentData from './data/equipment.json';
 
 // ─── State ──────────────────────────────────────────────
@@ -288,26 +288,7 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
     });
 });
 
-// ─── Upload Tool ────────────────────────────────────────
-initUploadUI({
-    onEquipmentAdded: (eqData) => {
-        // Add to catalog
-        catalog.addEquipment(eqData);
 
-        // Persist in localStorage
-        const saved = loadUploadedEquipment();
-        saved.push(eqData);
-        saveUploadedEquipment(saved);
-
-        // Add to canvas
-        addItemToCanvas(eqData);
-        showToast(`Added ${eqData.brand} ${eqData.name}`, 'success');
-        scheduleAutoSave();
-    },
-    onError: (msg) => {
-        showToast(msg, 'error');
-    }
-});
 
 // ─── Toolbar Actions ────────────────────────────────────
 document.getElementById('btn-zoom-in').addEventListener('click', () => canvas.zoomIn());

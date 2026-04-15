@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Equipment Editor — Upload, process, and add rack-mount equipment to your catalog." />
+  <title>Equipment Editor — RackPlanner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="editor-page">
+
+    <!-- Header -->
+    <header class="editor-header">
+      <div class="editor-header-left">
+        <a href="index.html" class="editor-back" id="back-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Planner
+        </a>
+        <div class="editor-title">
+          <span class="brand-bold">RACK</span><span class="brand-light">PLANNER</span>
+          <span> · Equipment Editor</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="editor-content">
+      <div class="editor-grid">
+
+        <!-- Step 1: Front Panel -->
+        <div class="editor-card" id="card-front">
+          <div class="editor-card-header">
+            <h2><span class="step-badge">1</span> Front Panel Image</h2>
+          </div>
+          <div class="editor-card-body">
+            <div class="image-workspace">
+              <!-- Canvas Area -->
+              <div class="image-canvas-area" id="front-canvas-area">
+                <div class="image-dropzone-full" id="front-dropzone">
+                  <svg class="drop-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <div class="drop-text"><strong>Drop front panel image</strong> or click to browse</div>
+                  <input type="file" id="front-file-input" accept="image/*" />
+                </div>
+                <canvas id="front-canvas" style="display:none;"></canvas>
+                <canvas id="mounting-overlay-canvas" class="mounting-overlay hidden"></canvas>
+              </div>
+
+              <!-- Tools Panel -->
+              <div class="image-tools">
+                <div class="tool-group">
+                  <div class="tool-group-title">Background</div>
+                  <button class="tool-btn" id="btn-remove-bg" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 18"/><path d="M3 7h4l2.5 3h8.5"/><path d="M3 17h18"/></svg>
+                    Auto Remove Background
+                  </button>
+                  <div class="tool-slider">
+                    <label>Tolerance <span id="tolerance-value">30</span></label>
+                    <input type="range" id="bg-tolerance" min="5" max="80" value="30" />
+                  </div>
+                  <button class="tool-btn" id="btn-pick-bg" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                    Click to Remove Color
+                  </button>
+                </div>
+
+                <div class="tool-group">
+                  <div class="tool-group-title">Mounting</div>
+                  <button class="tool-btn" id="btn-toggle-mounting" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+                    Show Rack Ears
+                  </button>
+                </div>
+
+                <div class="tool-group">
+                  <div class="tool-group-title">Image</div>
+                  <button class="tool-btn" id="btn-reset-front" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                    Reset to Original
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Back Panel -->
+        <div class="editor-card" id="card-back">
+          <div class="editor-card-header">
+            <h2><span class="step-badge">2</span> Back Panel Image</h2>
+            <span class="optional-tag">Optional</span>
+          </div>
+          <div class="editor-card-body">
+            <div class="back-panel-workspace">
+              <div class="back-image-area" id="back-canvas-area">
+                <div class="image-dropzone-full" id="back-dropzone">
+                  <svg class="drop-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <div class="drop-text"><strong>Drop back panel image</strong> or click to browse</div>
+                  <input type="file" id="back-file-input" accept="image/*" />
+                </div>
+                <canvas id="back-canvas" style="display:none;"></canvas>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="tool-btn" id="btn-remove-bg-back" disabled style="flex: 1;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 18"/><path d="M3 7h4l2.5 3h8.5"/><path d="M3 17h18"/></svg>
+                  Auto Remove BG
+                </button>
+                <button class="tool-btn" id="btn-reset-back" disabled style="flex: 1;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                  Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Equipment Details -->
+        <div class="editor-card" id="card-details">
+          <div class="editor-card-header">
+            <h2><span class="step-badge">3</span> Equipment Details</h2>
+          </div>
+          <div class="editor-card-body">
+            <div class="details-grid">
+              <div class="form-group span-2">
+                <label for="eq-name">Name</label>
+                <input type="text" id="eq-name" placeholder="e.g. ULXD4Q" />
+              </div>
+              <div class="form-group span-2">
+                <label for="eq-brand">Brand</label>
+                <input type="text" id="eq-brand" placeholder="e.g. Shure" />
+              </div>
+              <div class="form-group">
+                <label for="eq-category">Category</label>
+                <select id="eq-category">
+                  <option value="effects">Effects / Processing</option>
+                  <option value="power">Power Distribution</option>
+                  <option value="amplifier">Amplifier</option>
+                  <option value="wireless">Wireless</option>
+                  <option value="mixer">Mixer</option>
+                  <option value="interface">Audio Interface</option>
+                  <option value="networking">Networking</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="eq-height">Height (U)</label>
+                <select id="eq-height">
+                  <option value="1">1U</option>
+                  <option value="2">2U</option>
+                  <option value="3">3U</option>
+                  <option value="4">4U</option>
+                  <option value="5">5U</option>
+                  <option value="6">6U</option>
+                </select>
+              </div>
+              <div class="form-group span-2">
+                <label for="eq-description">Description</label>
+                <input type="text" id="eq-description" placeholder="e.g. Quad-channel wireless receiver" />
+              </div>
+            </div>
+
+            <div class="power-section">
+              <label class="power-toggle">
+                <input type="checkbox" id="eq-power-required" />
+                Requires Power
+              </label>
+              <div class="power-fields disabled" id="power-fields">
+                <div class="power-field">
+                  <label>Draw</label>
+                  <input type="number" id="eq-power-watts" min="0" max="5000" value="0" />
+                  <label>W</label>
+                </div>
+                <div class="power-field">
+                  <label>Connector</label>
+                  <select id="eq-power-connector">
+                    <option value="IEC">IEC C14</option>
+                    <option value="Powercon">Powercon</option>
+                    <option value="Powercon-TRUE1">Powercon TRUE1</option>
+                    <option value="hardwired">Hardwired</option>
+                    <option value="DC">DC Barrel</option>
+                    <option value="USB">USB Powered</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: I/O -->
+        <div class="editor-card" id="card-io">
+          <div class="editor-card-header">
+            <h2><span class="step-badge">4</span> Inputs & Outputs</h2>
+            <span class="optional-tag">Optional</span>
+          </div>
+          <div class="editor-card-body">
+            <div class="io-section">
+              <!-- Inputs -->
+              <div class="io-column">
+                <h3>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/></svg>
+                  Inputs
+                </h3>
+                <div class="io-list" id="inputs-list">
+                  <div class="io-empty">No inputs added</div>
+                </div>
+                <button class="io-add-btn" id="btn-add-input">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Add Input
+                </button>
+              </div>
+
+              <!-- Outputs -->
+              <div class="io-column">
+                <h3>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                  Outputs
+                </h3>
+                <div class="io-list" id="outputs-list">
+                  <div class="io-empty">No outputs added</div>
+                </div>
+                <button class="io-add-btn" id="btn-add-output">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Add Output
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="editor-footer">
+      <a href="index.html" class="btn-editor-secondary">Cancel</a>
+      <button class="btn-editor-primary" id="btn-save-equipment">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save to Catalog
+      </button>
+    </footer>
+
+    <!-- Processing Overlay -->
+    <div class="processing-overlay hidden" id="processing-overlay">
+      <div class="processing-card">
+        <div class="processing-spinner"></div>
+        <span id="processing-text">Processing image...</span>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="editor-toast hidden" id="editor-toast"></div>
+
+  </div>
+
+  <script type="module" src="/src/editor-main.js"></script>
+</body>
+</html>
