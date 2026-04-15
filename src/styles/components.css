@@ -346,11 +346,45 @@
     background: var(--border);
 }
 
+.sidebar-section.collapsible-section .sidebar-section-title {
+    margin-bottom: 0;
+}
+
 .sidebar-section-title {
     font-size: var(--font-md);
     font-weight: 600;
     color: var(--text-secondary);
     margin-bottom: var(--space-sm);
+}
+
+.sidebar-section-title.toggle-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: color var(--transition-fast);
+}
+
+.sidebar-section-title.toggle-btn:hover {
+    color: var(--text-primary);
+}
+
+.collapsible-content {
+    margin-top: var(--space-md);
+}
+
+.sidebar-section.closed .collapsible-content {
+    display: none;
+}
+
+.toggle-icon {
+    transition: transform var(--transition-fast);
+    color: var(--text-tertiary);
+}
+
+.sidebar-section.closed .toggle-icon {
+    transform: rotate(180deg);
 }
 
 .custom-item-tabs {

@@ -278,6 +278,16 @@ if (isDesktop()) {
     sidebarOpen = true;
 }
 
+// ─── Collapsible Sidebar Sections ────────────────────────
+document.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const section = e.currentTarget.closest('.collapsible-section');
+        if (section) {
+            section.classList.toggle('closed');
+        }
+    });
+});
+
 // ─── Upload Tool ────────────────────────────────────────
 initUploadUI({
     onEquipmentAdded: (eqData) => {

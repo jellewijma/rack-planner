@@ -93,13 +93,17 @@
       <div class="sidebar-divider"></div>
 
       <!-- Custom Item -->
-      <div class="sidebar-section">
-        <h3 class="sidebar-section-title">Add Custom Item</h3>
-        <div class="custom-item-tabs">
-          <button class="custom-tab active" data-custom-type="equipment" id="custom-tab-equipment">Equipment</button>
-          <button class="custom-tab" data-custom-type="rack" id="custom-tab-rack">Rack Enclosure</button>
-        </div>
-        <div class="custom-item-form" id="custom-form">
+      <div class="sidebar-section collapsible-section closed">
+        <h3 class="sidebar-section-title toggle-btn">
+          Add Custom Item
+          <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </h3>
+        <div class="collapsible-content">
+          <div class="custom-item-tabs">
+            <button class="custom-tab active" data-custom-type="equipment" id="custom-tab-equipment">Equipment</button>
+            <button class="custom-tab" data-custom-type="rack" id="custom-tab-rack">Rack Enclosure</button>
+          </div>
+          <div class="custom-item-form" id="custom-form">
           <div class="form-row">
             <label for="custom-name">Name</label>
             <input type="text" id="custom-name" placeholder="My Custom Gear" />
@@ -114,6 +118,7 @@
           </div>
           <button class="btn-primary" id="btn-add-custom">Add to Canvas</button>
         </div>
+        </div>
       </div>
 
       <!-- Clear All -->
@@ -125,9 +130,13 @@
       <div class="sidebar-divider"></div>
 
       <!-- Upload Equipment -->
-      <div class="sidebar-section">
-        <h3 class="sidebar-section-title">Upload Equipment</h3>
-        <div class="upload-section" id="upload-section">
+      <div class="sidebar-section collapsible-section closed">
+        <h3 class="sidebar-section-title toggle-btn">
+          Upload Equipment
+          <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </h3>
+        <div class="collapsible-content">
+          <div class="upload-section" id="upload-section">
           <!-- Drop Zone -->
           <div class="upload-dropzone" id="upload-dropzone">
             <svg class="upload-dropzone-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -180,6 +189,7 @@
           </div>
 
           <button class="btn-primary" id="btn-upload-add">Process &amp; Add to Catalog</button>
+        </div>
         </div>
       </div>
     </div>
