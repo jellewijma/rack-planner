@@ -1,9 +1,10 @@
 /* ===== EDITOR LAYOUT ===== */
 
 /* Override global overflow:hidden so the editor can scroll */
+html:has(.editor-page),
 body:has(.editor-page) {
-    overflow: auto;
-    height: auto;
+    overflow: auto !important;
+    height: auto !important;
 }
 
 .editor-page {
