@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RackPlanner — Interactive audio rack layout planner. Drag and drop rack-mount gear into 19-inch rack enclosures." />
+  <title>RackPlanner — Audio Rack Layout Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <!-- Top Toolbar -->
+  <header id="toolbar">
+    <div class="toolbar-brand">
+      <span class="brand-bold">RACK</span><span class="brand-light">PLANNER</span>
+    </div>
+    <div class="toolbar-actions">
+      <button id="btn-undo" class="toolbar-btn" title="Undo (Ctrl+Z)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h13a4 4 0 0 1 0 8H7"/><polyline points="7 6 3 10 7 14"/></svg>
+      </button>
+      <button id="btn-redo" class="toolbar-btn" title="Redo (Ctrl+Y)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10H8a4 4 0 0 0 0 8h9"/><polyline points="17 6 21 10 17 14"/></svg>
+      </button>
+      <div class="toolbar-separator"></div>
+      <button id="btn-zoom-in" class="toolbar-btn" title="Zoom In">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+      </button>
+      <span id="zoom-level" class="zoom-display">100%</span>
+      <button id="btn-zoom-out" class="toolbar-btn" title="Zoom Out">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+      </button>
+      <div class="toolbar-separator"></div>
+      <button id="btn-save" class="toolbar-btn" title="Save Layout">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      </button>
+      <button id="btn-load" class="toolbar-btn" title="Load Layout">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <button id="btn-export" class="toolbar-btn" title="Export as PNG">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </button>
+      <div class="toolbar-separator"></div>
+      <button id="btn-settings" class="toolbar-btn" title="Settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Canvas Area -->
+  <div id="canvas-viewport">
+    <div id="canvas">
+      <!-- Rack items and equipment are rendered here dynamically -->
+    </div>
+  </div>
+
+  <!-- Floating Action Button to toggle sidebar -->
+  <button id="fab-add" title="Add Equipment">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+
+  <!-- Sidebar Drawer -->
+  <aside id="sidebar" class="sidebar-closed">
+    <div class="sidebar-handle" id="sidebar-handle">
+      <div class="handle-bar"></div>
+    </div>
+    <div class="sidebar-content">
+      <!-- Search -->
+      <div class="sidebar-search">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-input" placeholder="Search equipment..." autocomplete="off" />
+      </div>
+
+      <!-- Categories -->
+      <div class="sidebar-categories" id="category-tabs">
+        <button class="category-tab active" data-category="all">All</button>
+        <button class="category-tab" data-category="rack">Racks</button>
+        <button class="category-tab" data-category="effects">Effects</button>
+        <button class="category-tab" data-category="mixer">Mixers</button>
+        <button class="category-tab" data-category="power">Power</button>
+        <button class="category-tab" data-category="wireless">Wireless</button>
+        <button class="category-tab" data-category="amplifier">Amps</button>
+        <button class="category-tab" data-category="interface">Interfaces</button>
+        <button class="category-tab" data-category="other">Other</button>
+      </div>
+
+      <!-- Equipment List -->
+      <div class="sidebar-list" id="equipment-list">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Divider -->
+      <div class="sidebar-divider"></div>
+
+      <!-- Custom Item -->
+      <div class="sidebar-section">
+        <h3 class="sidebar-section-title">Add Custom Item</h3>
+        <div class="custom-item-tabs">
+          <button class="custom-tab active" data-custom-type="equipment" id="custom-tab-equipment">Equipment</button>
+          <button class="custom-tab" data-custom-type="rack" id="custom-tab-rack">Rack Enclosure</button>
+        </div>
+        <div class="custom-item-form" id="custom-form">
+          <div class="form-row">
+            <label for="custom-name">Name</label>
+            <input type="text" id="custom-name" placeholder="My Custom Gear" />
+          </div>
+          <div class="form-row">
+            <label for="custom-height">Height (U)</label>
+            <input type="number" id="custom-height" min="1" max="48" value="1" />
+          </div>
+          <div class="form-row">
+            <label for="custom-color">Color</label>
+            <input type="color" id="custom-color" value="#6366f1" />
+          </div>
+          <button class="btn-primary" id="btn-add-custom">Add to Canvas</button>
+        </div>
+      </div>
+
+      <!-- Clear All -->
+      <div class="sidebar-section sidebar-section-bottom">
+        <button class="btn-danger" id="btn-clear-all">Clear Canvas</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Contextual Menu (shown when item is selected) -->
+  <div id="context-menu" class="context-menu hidden">
+    <button class="ctx-btn" id="ctx-duplicate" title="Duplicate">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+    </button>
+    <button class="ctx-btn ctx-delete" id="ctx-delete" title="Delete">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <button class="modal-close" id="settings-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-row">
+          <label>Grid Snap</label>
+          <label class="toggle">
+            <input type="checkbox" id="setting-snap" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <label>Show Grid</label>
+          <label class="toggle">
+            <input type="checkbox" id="setting-grid" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <label>Auto-save</label>
+          <label class="toggle">
+            <input type="checkbox" id="setting-autosave" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,636 @@
+{
+    "racks": [
+        {
+            "id": "rack-2u",
+            "name": "2U Rack Case",
+            "brand": "Generic",
+            "category": "rack",
+            "heightU": 2,
+            "color": "#3a3a4d",
+            "description": "Compact 2U rack enclosure",
+            "image": null
+        },
+        {
+            "id": "rack-4u",
+            "name": "4U Rack Case",
+            "brand": "Generic",
+            "category": "rack",
+            "heightU": 4,
+            "color": "#3a3a4d",
+            "description": "Standard 4U rack enclosure",
+            "image": null
+        },
+        {
+            "id": "rack-6u",
+            "name": "6U Rack Case",
+            "brand": "Generic",
+            "category": "rack",
+            "heightU": 6,
+            "color": "#3a3a4d",
+            "description": "6U rack enclosure",
+            "image": null
+        },
+        {
+            "id": "rack-8u",
+            "name": "8U Rack Case",
+            "brand": "Generic",
+            "category": "rack",
+            "heightU": 8,
+            "color": "#3a3a4d",
+            "description": "8U rack enclosure",
+            "image": null
+        },
+        {
+            "id": "rack-10u",
+            "name": "10U Rack Case",
+            "brand": "Generic",
+            "category": "rack",
+            "heightU": 10,
+            "color": "#3a3a4d",
+            "description": "10U rack enclosure",
+            "image": null
+        },
+        {
+            "id": "rack-12u",
+            "name": "12U Rack Case",
+            "brand": "Generic",
+            "category": "rack",
+            "heightU": 12,
+            "color": "#3a3a4d",
+            "description": "12U rack enclosure",
+            "image": null
+        },
+        {
+            "id": "rack-16u",
+            "name": "16U Rack Case",
+            "brand": "Generic",
+            "category": "rack",
+            "heightU": 16,
+            "color": "#3a3a4d",
+            "description": "16U rack enclosure",
+            "image": null
+        },
+        {
+            "id": "rack-20u",
+            "name": "20U Rack Case",
+            "brand": "Generic",
+            "category": "rack",
+            "heightU": 20,
+            "color": "#3a3a4d",
+            "description": "20U rack enclosure",
+            "image": null
+        }
+    ],
+    "equipment": [
+        {
+            "id": "furman-pl-plus-c",
+            "name": "PL-Plus C",
+            "brand": "Furman",
+            "category": "power",
+            "heightU": 1,
+            "color": "#1a1a2e",
+            "description": "Power conditioner with lights",
+            "image": "furman-pl-plus-c.png"
+        },
+        {
+            "id": "furman-m-8x2",
+            "name": "M-8x2",
+            "brand": "Furman",
+            "category": "power",
+            "heightU": 1,
+            "color": "#1a1a2e",
+            "description": "Merit Series power conditioner",
+            "image": null
+        },
+        {
+            "id": "furman-p-1800-ar",
+            "name": "P-1800 AR",
+            "brand": "Furman",
+            "category": "power",
+            "heightU": 1,
+            "color": "#1c1c30",
+            "description": "Voltage regulator / conditioner",
+            "image": null
+        },
+        {
+            "id": "dbx-266xs",
+            "name": "266xs",
+            "brand": "dbx",
+            "category": "effects",
+            "heightU": 1,
+            "color": "#2d1f4e",
+            "description": "Compressor / Gate",
+            "image": "dbx-266xs.png"
+        },
+        {
+            "id": "dbx-231s",
+            "name": "231s",
+            "brand": "dbx",
+            "category": "effects",
+            "heightU": 1,
+            "color": "#2d1f4e",
+            "description": "Dual 31-band graphic EQ",
+            "image": null
+        },
+        {
+            "id": "dbx-pa2",
+            "name": "DriveRack PA2",
+            "brand": "dbx",
+            "category": "effects",
+            "heightU": 1,
+            "color": "#221a40",
+            "description": "Loudspeaker management system",
+            "image": null
+        },
+        {
+            "id": "dbx-160a",
+            "name": "160A",
+            "brand": "dbx",
+            "category": "effects",
+            "heightU": 1,
+            "color": "#2d1f4e",
+            "description": "Compressor / Limiter",
+            "image": null
+        },
+        {
+            "id": "behringer-cx2310",
+            "name": "CX2310 Super-X",
+            "brand": "Behringer",
+            "category": "effects",
+            "heightU": 1,
+            "color": "#1e3a1e",
+            "description": "Crossover",
+            "image": null
+        },
+        {
+            "id": "behringer-fbq2496",
+            "name": "FBQ2496",
+            "brand": "Behringer",
+            "category": "effects",
+            "heightU": 1,
+            "color": "#1e3a1e",
+            "description": "Feedback destroyer / EQ",
+            "image": null
+        },
+        {
+            "id": "behringer-mdx2600",
+            "name": "MDX2600",
+            "brand": "Behringer",
+            "category": "effects",
+            "heightU": 1,
+            "color": "#1e3a1e",
+            "description": "Compressor / Gate",
+            "image": null
+        },
+        {
+            "id": "behringer-ha8000",
+            "name": "HA8000 Powerplay",
+            "brand": "Behringer",
+            "category": "amplifier",
+            "heightU": 1,
+            "color": "#1e3a1e",
+            "description": "8-channel headphone amp",
+            "image": null
+        },
+        {
+            "id": "behringer-di4000",
+            "name": "DI4000 Ultra-DI",
+            "brand": "Behringer",
+            "category": "other",
+            "heightU": 1,
+            "color": "#1e3a1e",
+            "description": "4-channel active DI box",
+            "image": null
+        },
+        {
+            "id": "yamaha-spx990",
+            "name": "SPX990",
+            "brand": "Yamaha",
+            "category": "effects",
+            "heightU": 1,
+            "color": "#1a2440",
+            "description": "Multi-effects processor",
+            "image": null
+        },
+        {
+            "id": "yamaha-p2500s",
+            "name": "P2500S",
+            "brand": "Yamaha",
+            "category": "amplifier",
+            "heightU": 2,
+            "color": "#1a2440",
+            "description": "Power amplifier",
+            "image": "yamaha-p2500s.png"
+        },
+        {
+            "id": "yamaha-p5000s",
+            "name": "P5000S",
+            "brand": "Yamaha",
+            "category": "amplifier",
+            "heightU": 2,
+            "color": "#1a2440",
+            "description": "Power amplifier",
+            "image": null
+        },
+        {
+            "id": "yamaha-p7000s",
+            "name": "P7000S",
+            "brand": "Yamaha",
+            "category": "amplifier",
+            "heightU": 3,
+            "color": "#1a2440",
+            "description": "Power amplifier",
+            "image": null
+        },
+        {
+            "id": "crown-xls1502",
+            "name": "XLS 1502",
+            "brand": "Crown",
+            "category": "amplifier",
+            "heightU": 2,
+            "color": "#2a1a1a",
+            "description": "Power amplifier",
+            "image": null
+        },
+        {
+            "id": "crown-xls2502",
+            "name": "XLS 2502",
+            "brand": "Crown",
+            "category": "amplifier",
+            "heightU": 2,
+            "color": "#2a1a1a",
+            "description": "Power amplifier",
+            "image": "crown-xls2502.png"
+        },
+        {
+            "id": "crown-xti4002",
+            "name": "XTi 4002",
+            "brand": "Crown",
+            "category": "amplifier",
+            "heightU": 2,
+            "color": "#2a1a1a",
+            "description": "Power amplifier with DSP",
+            "image": null
+        },
+        {
+            "id": "shure-ulxd4d",
+            "name": "ULXD4D",
+            "brand": "Shure",
+            "category": "wireless",
+            "heightU": 1,
+            "color": "#333340",
+            "description": "Dual digital wireless receiver",
+            "image": null
+        },
+        {
+            "id": "shure-ulxd4q",
+            "name": "ULXD4Q",
+            "brand": "Shure",
+            "category": "wireless",
+            "heightU": 1,
+            "color": "#333340",
+            "description": "Quad digital wireless receiver",
+            "image": "shure-ulxd4q.png"
+        },
+        {
+            "id": "shure-p10t",
+            "name": "PSM1000 P10T",
+            "brand": "Shure",
+            "category": "wireless",
+            "heightU": 1,
+            "color": "#333340",
+            "description": "Dual wireless IEM transmitter",
+            "image": null
+        },
+        {
+            "id": "shure-slxd4d",
+            "name": "SLXD4D",
+            "brand": "Shure",
+            "category": "wireless",
+            "heightU": 1,
+            "color": "#333340",
+            "description": "Dual wireless receiver",
+            "image": null
+        },
+        {
+            "id": "shure-scm820",
+            "name": "SCM820",
+            "brand": "Shure",
+            "category": "mixer",
+            "heightU": 1,
+            "color": "#333340",
+            "description": "8-channel automatic mixer",
+            "image": null
+        },
+        {
+            "id": "shure-ant-distro",
+            "name": "UA844+SWB",
+            "brand": "Shure",
+            "category": "wireless",
+            "heightU": 1,
+            "color": "#333340",
+            "description": "Antenna distribution system",
+            "image": null
+        },
+        {
+            "id": "sennheiser-ew300-g4",
+            "name": "EW 300 G4",
+            "brand": "Sennheiser",
+            "category": "wireless",
+            "heightU": 1,
+            "color": "#2a2a3a",
+            "description": "Wireless microphone receiver",
+            "image": "sennheiser-ew300-g4.png"
+        },
+        {
+            "id": "sennheiser-ew-iem-g4",
+            "name": "EW IEM G4",
+            "brand": "Sennheiser",
+            "category": "wireless",
+            "heightU": 1,
+            "color": "#2a2a3a",
+            "description": "Wireless IEM transmitter",
+            "image": null
+        },
+        {
+            "id": "focusrite-18i20",
+            "name": "Scarlett 18i20",
+            "brand": "Focusrite",
+            "category": "interface",
+            "heightU": 1,
+            "color": "#4a1a1a",
+            "description": "USB audio interface, 18-in 20-out",
+            "image": "focusrite-scarlett-18i20.png"
+        },
+        {
+            "id": "focusrite-clarett-8pre",
+            "name": "Clarett+ 8Pre",
+            "brand": "Focusrite",
+            "category": "interface",
+            "heightU": 1,
+            "color": "#4a1a1a",
+            "description": "Thunderbolt audio interface",
+            "image": null
+        },
+        {
+            "id": "motu-24ao",
+            "name": "24Ao",
+            "brand": "MOTU",
+            "category": "interface",
+            "heightU": 1,
+            "color": "#1a2a3a",
+            "description": "USB/AVB audio interface, 24-out",
+            "image": null
+        },
+        {
+            "id": "motu-stage-b16",
+            "name": "Stage-B16",
+            "brand": "MOTU",
+            "category": "interface",
+            "heightU": 1,
+            "color": "#1a2a3a",
+            "description": "Stage box / audio interface",
+            "image": null
+        },
+        {
+            "id": "radial-jd7",
+            "name": "JD7 Injector",
+            "brand": "Radial",
+            "category": "other",
+            "heightU": 1,
+            "color": "#3a2a1a",
+            "description": "Guitar signal distribution",
+            "image": null
+        },
+        {
+            "id": "radial-sw8",
+            "name": "SW8 AutoSwitcher",
+            "brand": "Radial",
+            "category": "other",
+            "heightU": 1,
+            "color": "#3a2a1a",
+            "description": "Auto backup switcher",
+            "image": null
+        },
+        {
+            "id": "tc-m3000",
+            "name": "M3000",
+            "brand": "TC Electronic",
+            "category": "effects",
+            "heightU": 1,
+            "color": "#1e2e4e",
+            "description": "Dual engine reverb",
+            "image": null
+        },
+        {
+            "id": "tc-d-two",
+            "name": "D-Two",
+            "brand": "TC Electronic",
+            "category": "effects",
+            "heightU": 1,
+            "color": "#1e2e4e",
+            "description": "Multi-tap delay",
+            "image": null
+        },
+        {
+            "id": "tc-m-one-xl",
+            "name": "M-One XL",
+            "brand": "TC Electronic",
+            "category": "effects",
+            "heightU": 1,
+            "color": "#1e2e4e",
+            "description": "Dual effects processor",
+            "image": null
+        },
+        {
+            "id": "lexicon-mx400",
+            "name": "MX400",
+            "brand": "Lexicon",
+            "category": "effects",
+            "heightU": 1,
+            "color": "#1a1a40",
+            "description": "Dual stereo reverb / effects",
+            "image": null
+        },
+        {
+            "id": "lexicon-pcm92",
+            "name": "PCM92",
+            "brand": "Lexicon",
+            "category": "effects",
+            "heightU": 1,
+            "color": "#1a1a40",
+            "description": "Stereo reverb / effects",
+            "image": null
+        },
+        {
+            "id": "art-sla1",
+            "name": "SLA-1",
+            "brand": "ART",
+            "category": "amplifier",
+            "heightU": 1,
+            "color": "#2a2a2a",
+            "description": "Studio linear power amp",
+            "image": null
+        },
+        {
+            "id": "art-mpa-ii",
+            "name": "MPA II",
+            "brand": "ART",
+            "category": "interface",
+            "heightU": 1,
+            "color": "#2a2a2a",
+            "description": "Dual tube preamp",
+            "image": null
+        },
+        {
+            "id": "cloudlifter-cl4",
+            "name": "CL-4",
+            "brand": "Cloudlifter",
+            "category": "other",
+            "heightU": 1,
+            "color": "#3a3a2a",
+            "description": "4-channel mic activator",
+            "image": null
+        },
+        {
+            "id": "powercon-panel",
+            "name": "PowerCon Panel",
+            "brand": "Generic",
+            "category": "power",
+            "heightU": 1,
+            "color": "#2a2a2a",
+            "description": "PowerCon patch panel",
+            "image": null
+        },
+        {
+            "id": "blank-panel-1u",
+            "name": "Blank Panel 1U",
+            "brand": "Generic",
+            "category": "other",
+            "heightU": 1,
+            "color": "#1a1a1a",
+            "description": "Vented blank rack panel",
+            "image": "blank-panel-1u.png"
+        },
+        {
+            "id": "blank-panel-2u",
+            "name": "Blank Panel 2U",
+            "brand": "Generic",
+            "category": "other",
+            "heightU": 2,
+            "color": "#1a1a1a",
+            "description": "Vented blank rack panel",
+            "image": null
+        },
+        {
+            "id": "drawer-2u",
+            "name": "Rack Drawer 2U",
+            "brand": "Generic",
+            "category": "other",
+            "heightU": 2,
+            "color": "#222222",
+            "description": "Sliding rack drawer",
+            "image": null
+        },
+        {
+            "id": "shelf-1u",
+            "name": "Rack Shelf 1U",
+            "brand": "Generic",
+            "category": "other",
+            "heightU": 1,
+            "color": "#252525",
+            "description": "Vented rack shelf",
+            "image": null
+        },
+        {
+            "id": "patch-bay-48",
+            "name": "48-Point Patch Bay",
+            "brand": "Generic",
+            "category": "other",
+            "heightU": 1,
+            "color": "#2a2a2a",
+            "description": "TRS patch bay",
+            "image": null
+        },
+        {
+            "id": "qsc-gxd4",
+            "name": "GXD 4",
+            "brand": "QSC",
+            "category": "amplifier",
+            "heightU": 1,
+            "color": "#1a2a3a",
+            "description": "Power amplifier with DSP",
+            "image": null
+        },
+        {
+            "id": "qsc-gxd8",
+            "name": "GXD 8",
+            "brand": "QSC",
+            "category": "amplifier",
+            "heightU": 2,
+            "color": "#1a2a3a",
+            "description": "Power amplifier with DSP",
+            "image": null
+        },
+        {
+            "id": "qsc-cx302v",
+            "name": "CX302V",
+            "brand": "QSC",
+            "category": "amplifier",
+            "heightU": 2,
+            "color": "#1a2a3a",
+            "description": "Direct/70V power amplifier",
+            "image": null
+        },
+        {
+            "id": "soundcraft-ui16",
+            "name": "Ui16",
+            "brand": "Soundcraft",
+            "category": "mixer",
+            "heightU": 3,
+            "color": "#2a2a40",
+            "description": "Digital mixer",
+            "image": null
+        },
+        {
+            "id": "behringer-xr18",
+            "name": "XR18 X Air",
+            "brand": "Behringer",
+            "category": "mixer",
+            "heightU": 3,
+            "color": "#1e3a1e",
+            "description": "18-channel digital mixer",
+            "image": "behringer-xr18.png"
+        },
+        {
+            "id": "midas-mr18",
+            "name": "MR18",
+            "brand": "Midas",
+            "category": "mixer",
+            "heightU": 3,
+            "color": "#3a2a1a",
+            "description": "18-input digital mixer",
+            "image": null
+        },
+        {
+            "id": "allen-heath-ar2412",
+            "name": "AR2412",
+            "brand": "Allen & Heath",
+            "category": "mixer",
+            "heightU": 5,
+            "color": "#1a3a3a",
+            "description": "AudioRack stage box",
+            "image": null
+        },
+        {
+            "id": "allen-heath-dx168",
+            "name": "DX168",
+            "brand": "Allen & Heath",
+            "category": "mixer",
+            "heightU": 3,
+            "color": "#1a3a3a",
+            "description": "dLive DX stage box",
+            "image": null
+        }
+    ]
+}
