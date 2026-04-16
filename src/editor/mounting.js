@@ -1,128 +1,268 @@
 /**
- * mounting.js — Rack mounting hardware overlay.
- * Draws rack ears, screw holes, and U-height guides
- * over the equipment image to verify alignment.
+ * mounting.js — Interactive rack mounting hardware overlay.
+ * User can drag top/bottom edge handles to position rack ears,
+ * and the U height is calculated from the ear span.
  */
 
-// Standard 19" rack dimensions (proportional)
-const RACK_WIDTH_INCHES = 19;
-const RACK_EAR_WIDTH_INCHES = 0.625; // Each ear ~5/8"
-const RACK_PANEL_WIDTH_INCHES = 17.75; // Usable panel width
 const U_HEIGHT_INCHES = 1.75;
-const SCREW_SPACING_INCHES = [0.25, 0.625, 1.25]; // Standard EIA hole pattern per U
+const RACK_WIDTH_INCHES = 19;
+const RACK_EAR_WIDTH_RATIO = 0.625 / 19; // ear width as fraction of total
+const SCREW_OFFSETS_RATIO = [0.25 / 1.75, 0.625 / 1.75, 1.25 / 1.75]; // within each U
 
-/**
- * Draw the mounting overlay on a canvas.
- * @param {HTMLCanvasElement} overlayCanvas - The overlay canvas
- * @param {number} imageWidth - Width of the equipment image
- * @param {number} imageHeight - Height of the equipment image
- * @param {number} heightU - Equipment height in U
- */
-export function drawMountingOverlay(overlayCanvas, imageWidth, imageHeight, heightU) {
-    overlayCanvas.width = imageWidth;
-    overlayCanvas.height = imageHeight;
-    const ctx = overlayCanvas.getContext('2d');
-    ctx.clearRect(0, 0, imageWidth, imageHeight);
+export class MountingOverlay {
+    /**
+     * @param {HTMLElement} canvasArea - The image container
+     * @param {HTMLCanvasElement} imageCanvas - The equipment image canvas
+     * @param {Object} callbacks - { onHeightChanged: (u) => void }
+     */
+    constructor(canvasArea, imageCanvas, callbacks = {}) {
+        this.canvasArea = canvasArea;
+        this.imageCanvas = imageCanvas;
+        this.callbacks = callbacks;
+        this.visible = false;
 
-    const totalHeightInches = heightU * U_HEIGHT_INCHES;
-    const pixelsPerInchX = imageWidth / RACK_WIDTH_INCHES;
-    const pixelsPerInchY = imageHeight / totalHeightInches;
+        // State: positions as fraction of image height (0..1)
+        this.topFraction = 0;
+        this.bottomFraction = 1;
+        this.heightU = 1;
 
-    const earWidthPx = RACK_EAR_WIDTH_INCHES * pixelsPerInchX;
-    const panelStartX = earWidthPx;
-    const panelEndX = imageWidth - earWidthPx;
+        // Create overlay container
+        this.el = document.createElement('div');
+        this.el.className = 'mounting-interactive hidden';
 
-    // Draw rack ears (semi-transparent)
-    ctx.fillStyle = 'rgba(99, 102, 241, 0.15)';
-    ctx.fillRect(0, 0, earWidthPx, imageHeight);                // Left ear
-    ctx.fillRect(panelEndX, 0, earWidthPx, imageHeight);        // Right ear
+        // Left ear
+        this.leftEar = document.createElement('div');
+        this.leftEar.className = 'mount-ear mount-ear-left';
 
-    // Ear borders
-    ctx.strokeStyle = 'rgba(99, 102, 241, 0.6)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6, 4]);
+        // Right ear
+        this.rightEar = document.createElement('div');
+        this.rightEar.className = 'mount-ear mount-ear-right';
 
-    // Left ear border
-    ctx.beginPath();
-    ctx.moveTo(earWidthPx, 0);
-    ctx.lineTo(earWidthPx, imageHeight);
-    ctx.stroke();
+        // Top drag handle
+        this.topHandle = document.createElement('div');
+        this.topHandle.className = 'mount-handle mount-handle-top';
+        this.topHandle.innerHTML = '<div class="mount-handle-grip">▲ Top Edge</div>';
 
-    // Right ear border
-    ctx.beginPath();
-    ctx.moveTo(panelEndX, 0);
-    ctx.lineTo(panelEndX, imageHeight);
-    ctx.stroke();
+        // Bottom drag handle
+        this.bottomHandle = document.createElement('div');
+        this.bottomHandle.className = 'mount-handle mount-handle-bottom';
+        this.bottomHandle.innerHTML = '<div class="mount-handle-grip">▼ Bottom Edge</div>';
 
-    ctx.setLineDash([]);
+        // U-height label
+        this.uLabel = document.createElement('div');
+        this.uLabel.className = 'mount-u-label';
 
-    // Draw screw holes on ears
-    const screwRadius = Math.max(3, pixelsPerInchX * 0.15);
-    ctx.strokeStyle = 'rgba(99, 102, 241, 0.8)';
-    ctx.lineWidth = 1.5;
+        // Screw holes canvas
+        this.screwCanvas = document.createElement('canvas');
+        this.screwCanvas.className = 'mount-screw-canvas';
 
-    for (let u = 0; u < heightU; u++) {
-        const uTopY = u * U_HEIGHT_INCHES * pixelsPerInchY;
+        // U division lines container
+        this.divLines = document.createElement('div');
+        this.divLines.className = 'mount-div-lines';
 
-        // Standard EIA hole pattern: 3 holes per U
-        for (const offset of SCREW_SPACING_INCHES) {
-            const holeY = uTopY + offset * pixelsPerInchY;
+        this.el.appendChild(this.leftEar);
+        this.el.appendChild(this.rightEar);
+        this.el.appendChild(this.topHandle);
+        this.el.appendChild(this.bottomHandle);
+        this.el.appendChild(this.uLabel);
+        this.el.appendChild(this.screwCanvas);
+        this.el.appendChild(this.divLines);
 
-            // Left ear screws
-            drawScrewHole(ctx, earWidthPx / 2, holeY, screwRadius);
+        canvasArea.appendChild(this.el);
 
-            // Right ear screws
-            drawScrewHole(ctx, panelEndX + earWidthPx / 2, holeY, screwRadius);
+        // Bind drag events
+        this._setupDrag(this.topHandle, 'top');
+        this._setupDrag(this.bottomHandle, 'bottom');
+    }
+
+    show(heightU = 1) {
+        this.visible = true;
+        this.heightU = heightU;
+        this.topFraction = 0;
+        this.bottomFraction = 1;
+        this.el.classList.remove('hidden');
+        this._update();
+    }
+
+    hide() {
+        this.visible = false;
+        this.el.classList.add('hidden');
+    }
+
+    toggle(heightU) {
+        if (this.visible) {
+            this.hide();
+        } else {
+            this.show(heightU);
+        }
+        return this.visible;
+    }
+
+    _setupDrag(handle, which) {
+        let startY, startFrac;
+
+        const onDown = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            startY = e.clientY;
+            startFrac = which === 'top' ? this.topFraction : this.bottomFraction;
+            document.addEventListener('pointermove', onMove);
+            document.addEventListener('pointerup', onUp);
+            handle.classList.add('dragging');
+        };
+
+        const onMove = (e) => {
+            const canvasRect = this.imageCanvas.getBoundingClientRect();
+            const dy = e.clientY - startY;
+            const deltaFrac = dy / canvasRect.height;
+            let newFrac = startFrac + deltaFrac;
+            newFrac = Math.max(0, Math.min(1, newFrac));
+
+            if (which === 'top') {
+                // Can't go below bottom
+                if (newFrac < this.bottomFraction - 0.05) {
+                    this.topFraction = newFrac;
+                }
+            } else {
+                // Can't go above top
+                if (newFrac > this.topFraction + 0.05) {
+                    this.bottomFraction = newFrac;
+                }
+            }
+
+            this._calcU();
+            this._update();
+        };
+
+        const onUp = () => {
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('pointerup', onUp);
+            handle.classList.remove('dragging');
+            this.callbacks.onHeightChanged?.(this.heightU);
+        };
+
+        handle.addEventListener('pointerdown', onDown);
+    }
+
+    _calcU() {
+        const span = this.bottomFraction - this.topFraction;
+        // Calculate the most likely U from the span
+        // Image height should represent total equipment height
+        // So if ears cover 100%, it's the full U count
+        // We round to nearest integer U
+        const canvasRect = this.imageCanvas.getBoundingClientRect();
+        const earSpanPx = span * canvasRect.height;
+        const imageHeightPx = canvasRect.height;
+
+        // The user is marking where the rack ears ARE on the image.
+        // We need to figure out how many U that span represents.
+        // A rough heuristic: aspect ratio tells us.
+        // Standard: 19" wide, 1.75" per U
+        const imageAspect = this.imageCanvas.width / this.imageCanvas.height;
+        const totalHeightInches = RACK_WIDTH_INCHES / imageAspect;
+        const earSpanInches = totalHeightInches * span;
+        const uFloat = earSpanInches / U_HEIGHT_INCHES;
+        this.heightU = Math.max(1, Math.round(uFloat));
+    }
+
+    _update() {
+        const canvasRect = this.imageCanvas.getBoundingClientRect();
+        const areaRect = this.canvasArea.getBoundingClientRect();
+        const offsetX = canvasRect.left - areaRect.left;
+        const offsetY = canvasRect.top - areaRect.top;
+        const cw = canvasRect.width;
+        const ch = canvasRect.height;
+
+        const topPx = offsetY + this.topFraction * ch;
+        const bottomPx = offsetY + this.bottomFraction * ch;
+        const earSpanPx = bottomPx - topPx;
+
+        const earW = cw * RACK_EAR_WIDTH_RATIO;
+
+        // Left ear
+        this.leftEar.style.left = `${offsetX}px`;
+        this.leftEar.style.top = `${topPx}px`;
+        this.leftEar.style.width = `${earW}px`;
+        this.leftEar.style.height = `${earSpanPx}px`;
+
+        // Right ear
+        this.rightEar.style.left = `${offsetX + cw - earW}px`;
+        this.rightEar.style.top = `${topPx}px`;
+        this.rightEar.style.width = `${earW}px`;
+        this.rightEar.style.height = `${earSpanPx}px`;
+
+        // Handles
+        this.topHandle.style.left = `${offsetX}px`;
+        this.topHandle.style.top = `${topPx - 2}px`;
+        this.topHandle.style.width = `${cw}px`;
+
+        this.bottomHandle.style.left = `${offsetX}px`;
+        this.bottomHandle.style.top = `${bottomPx - 2}px`;
+        this.bottomHandle.style.width = `${cw}px`;
+
+        // U label
+        this.uLabel.style.left = `${offsetX + cw + 8}px`;
+        this.uLabel.style.top = `${topPx + earSpanPx / 2 - 14}px`;
+        this.uLabel.textContent = `${this.heightU}U`;
+
+        // Division lines
+        this.divLines.innerHTML = '';
+        if (this.heightU > 1) {
+            for (let u = 1; u < this.heightU; u++) {
+                const frac = u / this.heightU;
+                const y = topPx + frac * earSpanPx;
+                const line = document.createElement('div');
+                line.className = 'mount-div-line';
+                line.style.top = `${y}px`;
+                line.style.left = `${offsetX}px`;
+                line.style.width = `${cw}px`;
+                this.divLines.appendChild(line);
+            }
+        }
+
+        // Draw screw holes
+        this._drawScrews(offsetX, topPx, cw, earSpanPx, earW);
+    }
+
+    _drawScrews(offsetX, topPx, cw, earSpanPx, earW) {
+        this.screwCanvas.width = this.canvasArea.offsetWidth;
+        this.screwCanvas.height = this.canvasArea.offsetHeight;
+        const ctx = this.screwCanvas.getContext('2d');
+        ctx.clearRect(0, 0, this.screwCanvas.width, this.screwCanvas.height);
+
+        const uHeightPx = earSpanPx / this.heightU;
+        const screwR = Math.max(2, earW * 0.12);
+
+        ctx.strokeStyle = 'rgba(99, 102, 241, 0.8)';
+        ctx.fillStyle = 'rgba(99, 102, 241, 0.6)';
+        ctx.lineWidth = 1.5;
+
+        for (let u = 0; u < this.heightU; u++) {
+            const uTopY = topPx + u * uHeightPx;
+
+            for (const offset of SCREW_OFFSETS_RATIO) {
+                const holeY = uTopY + offset * uHeightPx;
+                const leftX = offsetX + earW / 2;
+                const rightX = offsetX + cw - earW / 2;
+
+                // Left screws
+                this._drawHole(ctx, leftX, holeY, screwR);
+                // Right screws
+                this._drawHole(ctx, rightX, holeY, screwR);
+            }
         }
     }
 
-    // Draw U-height division lines
-    if (heightU > 1) {
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([4, 4]);
-
-        for (let u = 1; u < heightU; u++) {
-            const y = u * U_HEIGHT_INCHES * pixelsPerInchY;
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(imageWidth, y);
-            ctx.stroke();
-        }
-
-        ctx.setLineDash([]);
-    }
-
-    // U labels
-    ctx.fillStyle = 'rgba(99, 102, 241, 0.8)';
-    ctx.font = `${Math.max(10, pixelsPerInchY * 0.3)}px Inter, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    for (let u = 0; u < heightU; u++) {
-        const centerY = (u + 0.5) * U_HEIGHT_INCHES * pixelsPerInchY;
-        ctx.fillText(`${u + 1}U`, earWidthPx / 2, centerY);
+    _drawHole(ctx, x, y, r) {
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x, y, r * 0.3, 0, Math.PI * 2);
+        ctx.fill();
     }
 }
 
-/**
- * Clear the mounting overlay.
- */
-export function clearMountingOverlay(overlayCanvas) {
-    const ctx = overlayCanvas.getContext('2d');
-    ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-}
-
-// ─── Helpers ────────────────────────────────────────────
-
-function drawScrewHole(ctx, x, y, radius) {
-    // Outer circle
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Center dot
-    ctx.beginPath();
-    ctx.arc(x, y, radius * 0.3, 0, Math.PI * 2);
-    ctx.fill();
-}
+// Keep the old static functions for backward compat
+export function drawMountingOverlay() {}
+export function clearMountingOverlay() {}

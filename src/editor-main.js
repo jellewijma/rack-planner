@@ -1,13 +1,14 @@
 /**
  * editor-main.js — Equipment Editor entry point.
- * Wires together bg-remove, mounting, and io-manager modules.
+ * Wires together crop, bg-remove, mounting, and io-manager modules.
  */
 
 import './styles/global.css';
 import './styles/editor.css';
 
 import { autoRemoveBackground, removeColorAtPoint, loadImageToCanvas, getCanvasDataUrl } from './editor/bg-remove.js';
-import { drawMountingOverlay, clearMountingOverlay } from './editor/mounting.js';
+import { MountingOverlay } from './editor/mounting.js';
+import { CropTool } from './editor/crop.js';
 import { IOManager } from './editor/io-manager.js';
 import { loadUploadedEquipment, saveUploadedEquipment } from './upload.js';
 
@@ -16,7 +17,6 @@ const frontCanvasArea = document.getElementById('front-canvas-area');
 const frontDropzone = document.getElementById('front-dropzone');
 const frontFileInput = document.getElementById('front-file-input');
 const frontCanvas = document.getElementById('front-canvas');
-const mountingCanvas = document.getElementById('mounting-overlay-canvas');
 
 const backCanvasArea = document.getElementById('back-canvas-area');
 const backDropzone = document.getElementById('back-dropzone');
@@ -25,6 +25,7 @@ const backCanvas = document.getElementById('back-canvas');
 
 const btnRemoveBg = document.getElementById('btn-remove-bg');
 const btnPickBg = document.getElementById('btn-pick-bg');
+const btnCrop = document.getElementById('btn-crop');
 const btnResetFront = document.getElementById('btn-reset-front');
 const btnToggleMounting = document.getElementById('btn-toggle-mounting');
 const toleranceSlider = document.getElementById('bg-tolerance');
@@ -38,11 +39,12 @@ const processingOverlay = document.getElementById('processing-overlay');
 const processingText = document.getElementById('processing-text');
 const toastEl = document.getElementById('editor-toast');
 
+const heightSelect = document.getElementById('eq-height');
+
 // ─── State ──────────────────────────────────────────────
 let frontOriginalImage = null;
 let backOriginalImage = null;
 let colorPickMode = false;
-let mountingVisible = false;
 
 // ─── I/O Manager ────────────────────────────────────────
 const ioManager = new IOManager(
@@ -51,6 +53,26 @@ const ioManager = new IOManager(
     document.getElementById('btn-add-input'),
     document.getElementById('btn-add-output')
 );
+
+// ─── Crop Tool ──────────────────────────────────────────
+const cropTool = new CropTool(frontCanvas, frontCanvasArea, {
+    onCropApplied: () => {
+        showToast('Image cropped');
+        // Refresh mounting if visible
+        if (mounting.visible) {
+            mounting.hide();
+            mounting.show(parseInt(heightSelect.value, 10));
+        }
+    }
+});
+
+// ─── Interactive Mounting Overlay ────────────────────────
+const mounting = new MountingOverlay(frontCanvasArea, frontCanvas, {
+    onHeightChanged: (u) => {
+        heightSelect.value = String(u);
+        showToast(`Detected ${u}U from rack ear position`);
+    }
+});
 
 // ─── Power toggle ───────────────────────────────────────
 const powerCheckbox = document.getElementById('eq-power-required');
@@ -98,13 +120,9 @@ setupDropzone(frontDropzone, frontFileInput, async (file) => {
         // Enable tools
         btnRemoveBg.disabled = false;
         btnPickBg.disabled = false;
+        btnCrop.disabled = false;
         btnResetFront.disabled = false;
         btnToggleMounting.disabled = false;
-
-        // Update mounting if visible
-        if (mountingVisible) {
-            updateMounting();
-        }
     } catch (err) {
         showToast(err.message, 'error');
     }
@@ -131,7 +149,6 @@ setupDropzone(backDropzone, backFileInput, async (file) => {
 // ─── Background Removal ─────────────────────────────────
 btnRemoveBg.addEventListener('click', () => {
     showProcessing('Removing background...');
-    // Use requestAnimationFrame to let the overlay render first
     requestAnimationFrame(() => {
         setTimeout(() => {
             autoRemoveBackground(frontCanvas, parseInt(toleranceSlider.value, 10));
@@ -177,11 +194,34 @@ frontCanvas.addEventListener('click', (e) => {
     });
 });
 
+// ─── Crop ───────────────────────────────────────────────
+btnCrop.addEventListener('click', () => {
+    if (cropTool.active) {
+        cropTool.deactivate();
+        btnCrop.classList.remove('active');
+    } else {
+        // Deactivate color pick if active
+        if (colorPickMode) {
+            colorPickMode = false;
+            btnPickBg.classList.remove('active');
+            frontCanvas.style.cursor = 'default';
+        }
+        cropTool.activate();
+        btnCrop.classList.add('active');
+    }
+});
+
 // ─── Reset ──────────────────────────────────────────────
 btnResetFront.addEventListener('click', async () => {
     if (frontOriginalImage) {
+        cropTool.deactivate();
+        btnCrop.classList.remove('active');
         await loadImageToCanvas(frontOriginalImage, frontCanvas);
         showToast('Image reset to original');
+        if (mounting.visible) {
+            mounting.hide();
+            mounting.show(parseInt(heightSelect.value, 10));
+        }
     }
 });
 
@@ -194,26 +234,16 @@ btnResetBack.addEventListener('click', async () => {
 
 // ─── Mounting Overlay ───────────────────────────────────
 btnToggleMounting.addEventListener('click', () => {
-    mountingVisible = !mountingVisible;
-    btnToggleMounting.classList.toggle('active', mountingVisible);
-
-    if (mountingVisible) {
-        updateMounting();
-        mountingCanvas.classList.remove('hidden');
-    } else {
-        mountingCanvas.classList.add('hidden');
-        clearMountingOverlay(mountingCanvas);
-    }
+    const nowVisible = mounting.toggle(parseInt(heightSelect.value, 10));
+    btnToggleMounting.classList.toggle('active', nowVisible);
 });
 
-function updateMounting() {
-    const heightU = parseInt(document.getElementById('eq-height').value, 10) || 1;
-    drawMountingOverlay(mountingCanvas, frontCanvas.width, frontCanvas.height, heightU);
-}
-
-// Re-draw mounting when height changes
-document.getElementById('eq-height').addEventListener('change', () => {
-    if (mountingVisible) updateMounting();
+// Re-draw mounting when height changes manually
+heightSelect.addEventListener('change', () => {
+    if (mounting.visible) {
+        mounting.hide();
+        mounting.show(parseInt(heightSelect.value, 10));
+    }
 });
 
 // ─── Save to Catalog ────────────────────────────────────
@@ -225,7 +255,7 @@ btnSave.addEventListener('click', () => {
     if (!brand) { showToast('Please enter a brand name', 'error'); return; }
 
     const category = document.getElementById('eq-category').value;
-    const heightU = parseInt(document.getElementById('eq-height').value, 10);
+    const heightU = parseInt(heightSelect.value, 10);
     const description = document.getElementById('eq-description').value.trim();
 
     // Power data
@@ -239,7 +269,10 @@ btnSave.addEventListener('click', () => {
     // I/O data
     const io = ioManager.getData();
 
-    // Image data
+    // Image data — hide mounting/crop overlays first
+    mounting.hide();
+    cropTool.deactivate();
+
     const frontImageDataUrl = frontCanvas.style.display !== 'none' ? getCanvasDataUrl(frontCanvas) : null;
     const backImageDataUrl = backCanvas.style.display !== 'none' ? getCanvasDataUrl(backCanvas) : null;
 
