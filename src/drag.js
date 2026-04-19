@@ -43,14 +43,22 @@ export class DragManager {
         e.stopPropagation();
         e.preventDefault();
 
-        this.select(itemId);
+        this.startDrag(item, e.clientX, e.clientY);
+    }
 
-        // Start drag
+    startDrag(item, clientX, clientY) {
+        this.select(item.id);
+
         this.isDragging = true;
         this.dragItem = item;
         this.canvas.viewport.classList.add('is-dragging-item');
 
-        const canvasPos = this.canvas.screenToCanvas(e.clientX, e.clientY);
+        const canvasPos = this.canvas.screenToCanvas(clientX, clientY);
+
+        this.dragStartX = item.x;
+        this.dragStartY = item.y;
+        this.dragStartRack = item.parentRack;
+        this.dragStartSlot = item.slotIndex;
 
         if (item.parentRack) {
             // Equipment inside rack → use its rack-relative position
@@ -64,7 +72,7 @@ export class DragManager {
             this.dragOffsetY = canvasPos.y - item.y;
         }
 
-        target.classList.add('is-dragging');
+        item.el.classList.add('is-dragging');
     }
 
     _onPointerMove(e) {
@@ -82,7 +90,7 @@ export class DragManager {
             if (this.onDragMove) {
                 this.onDragMove(this.dragItem, newX, newY, 'pulling-from-rack');
             }
-            return;
+            // Continue execution to update item's position
         }
 
         this.dragItem.x = newX;

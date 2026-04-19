@@ -16,6 +16,8 @@ import {
     removeFromRack,
     getSlotAtY,
     highlightSlots,
+    canInsertIntoRack,
+    findNearestAvailableSlot,
     SLOT_HEIGHT,
 } from './rack.js';
 import { saveState, loadState, clearState, exportAsPng, downloadDataUrl } from './storage.js';
@@ -52,10 +54,51 @@ const catalog = new Catalog(equipmentData, equipmentListEl, searchEl, categoryTa
 const uploadedEquipment = loadUploadedEquipment();
 uploadedEquipment.forEach(eq => catalog.addEquipment(eq));
 
-catalog.onAddItem = (itemData) => {
-    addItemToCanvas(itemData);
-    showToast(`Added ${itemData.name}`);
-    scheduleAutoSave();
+let catalogDragInfo = null;
+
+catalog.onPointerDownItem = (itemData, e) => {
+    catalogDragInfo = {
+        itemData,
+        startX: e.clientX,
+        startY: e.clientY,
+        dragStarted: false
+    };
+
+    const onUp = (upEvent) => {
+        if (catalogDragInfo && !catalogDragInfo.dragStarted) {
+            addItemToCanvas(catalogDragInfo.itemData);
+            showToast(`Added ${catalogDragInfo.itemData.name}`);
+            scheduleAutoSave();
+        }
+        catalogDragInfo = null;
+        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('pointermove', onMove);
+    };
+
+    const onMove = (moveEvent) => {
+        if (!catalogDragInfo) return;
+        if (catalogDragInfo.dragStarted) return;
+
+        const dx = moveEvent.clientX - catalogDragInfo.startX;
+        const dy = moveEvent.clientY - catalogDragInfo.startY;
+
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            catalogDragInfo.dragStarted = true;
+
+            const canvasPos = canvas.screenToCanvas(moveEvent.clientX, moveEvent.clientY);
+            const halfWidth = 170; 
+            const halfHeight = (itemData.heightU * SLOT_HEIGHT) / 2;
+            const posX = canvas.snapToGrid(canvasPos.x - halfWidth);
+            const posY = canvas.snapToGrid(canvasPos.y - halfHeight);
+
+            const newItem = addItemToCanvas(itemData, posX, posY);
+            drag.startDrag(newItem, moveEvent.clientX, moveEvent.clientY);
+            drag.dragStartX = null; // Mark as new item
+        }
+    };
+
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointermove', onMove);
 };
 
 // ─── Drag Manager ───────────────────────────────────────
@@ -90,7 +133,6 @@ drag.onDragMove = (item, x, y, mode) => {
             item.x = x;
             item.y = y;
         }
-        return;
     }
 
     // Check if hovering over a rack for drop-in preview
@@ -118,10 +160,15 @@ drag.onDragMove = (item, x, y, mode) => {
                 centerX > rackRect.x && centerX < rackRect.x + rackRect.w &&
                 centerY > rackRect.y && centerY < rackRect.y + rackRect.h
             ) {
-                const localY = centerY - rackRect.y;
-                const slotIdx = getSlotAtY(rackItem.el, localY);
+                const localTopY = y - rackRect.y;
+                let slotIdx = getSlotAtY(rackItem.el, localTopY);
                 if (slotIdx >= 0) {
-                    highlightSlots(rackItem, slotIdx, item.data.heightU, true);
+                    if (!canInsertIntoRack(rackItem, item.data.heightU, slotIdx)) {
+                        slotIdx = findNearestAvailableSlot(rackItem, item.data.heightU, slotIdx);
+                    }
+                    if (slotIdx >= 0) {
+                        highlightSlots(rackItem, slotIdx, item.data.heightU, true);
+                    }
                 }
             }
         });
@@ -138,6 +185,9 @@ drag.onDragEnd = (item, cx, cy) => {
 
     // Try to drop into a rack
     if (item.el.dataset.type === 'equipment' && !item.parentRack) {
+        let placedInRack = false;
+        let hoveredRack = false;
+
         items.forEach(rackItem => {
             if (rackItem.el.dataset.type !== 'rack') return;
             if (item.parentRack) return; // Already placed
@@ -156,16 +206,43 @@ drag.onDragEnd = (item, cx, cy) => {
                 centerX > rackRect.x && centerX < rackRect.x + rackRect.w &&
                 centerY > rackRect.y && centerY < rackRect.y + rackRect.h
             ) {
-                const localY = centerY - rackRect.y;
-                const slotIdx = getSlotAtY(rackItem.el, localY);
+                hoveredRack = true;
+                const localTopY = item.y - rackRect.y;
+                let slotIdx = getSlotAtY(rackItem.el, localTopY);
                 if (slotIdx >= 0) {
-                    const success = insertIntoRack(rackItem, item, slotIdx);
-                    if (success) {
-                        showToast(`${item.data.name} → Slot ${slotIdx + 1}`);
+                    if (!canInsertIntoRack(rackItem, item.data.heightU, slotIdx)) {
+                        slotIdx = findNearestAvailableSlot(rackItem, item.data.heightU, slotIdx);
+                    }
+                    if (slotIdx >= 0) {
+                        const success = insertIntoRack(rackItem, item, slotIdx);
+                        if (success) {
+                            showToast(`${item.data.name} → Slot ${slotIdx + 1}`);
+                            placedInRack = true;
+                        }
                     }
                 }
             }
         });
+
+        if (hoveredRack && !placedInRack) {
+            showToast('No available slots, bouncing back', 'error');
+            if (drag.dragStartRack && items.has(drag.dragStartRack)) {
+                const originalRack = items.get(drag.dragStartRack);
+                if (drag.dragStartSlot != null && canInsertIntoRack(originalRack, item.data.heightU, drag.dragStartSlot)) {
+                    insertIntoRack(originalRack, item, drag.dragStartSlot);
+                } else {
+                    let slotIdx = findNearestAvailableSlot(originalRack, item.data.heightU, 0);
+                    if (slotIdx >= 0) {
+                        insertIntoRack(originalRack, item, slotIdx);
+                    }
+                }
+            } else if (drag.dragStartX != null) {
+                item.x = drag.dragStartX;
+                item.y = drag.dragStartY;
+                item.el.style.left = `${item.x}px`;
+                item.el.style.top = `${item.y}px`;
+            }
+        }
     }
 
     // Show context menu for selected item

@@ -81,8 +81,14 @@ export class Catalog {
         </div>
         <div class="eq-height-badge">${item.category === 'rack' ? item.heightU + 'U Rack' : item.heightU + 'U'}</div>
       `;
-            el.addEventListener('click', () => {
-                if (this.onAddItem) this.onAddItem(item);
+            el.addEventListener('pointerdown', (e) => {
+                if (e.button !== 0) return;
+                e.preventDefault();
+                if (this.onPointerDownItem) {
+                    this.onPointerDownItem(item, e);
+                } else if (this.onAddItem) {
+                    this.onAddItem(item);
+                }
             });
             this.listEl.appendChild(el);
         });

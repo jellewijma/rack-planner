@@ -111,6 +111,41 @@ export function createEquipmentElement(eqData, x, y) {
     return { id, el, data: eqData, x, y, parentRack: null, slotIndex: null };
 }
 
+export function canInsertIntoRack(rackItem, heightU, slotIndex) {
+    if (slotIndex < 0) return false;
+    for (let i = slotIndex; i < slotIndex + heightU; i++) {
+        if (i >= rackItem.slots.length || rackItem.slots[i] !== null) {
+            return false;
+        }
+    }
+    return true;
+}
+
+export function findNearestAvailableSlot(rackItem, heightU, targetSlotIdx) {
+    let offset = 1;
+    let maxSlots = rackItem.slots.length;
+    while (true) {
+        let checkUp = targetSlotIdx - offset;
+        let checkDown = targetSlotIdx + offset;
+        let validUp = checkUp >= 0 && canInsertIntoRack(rackItem, heightU, checkUp);
+        let validDown = checkDown < maxSlots && canInsertIntoRack(rackItem, heightU, checkDown);
+
+        if (validUp && validDown) {
+            return checkUp;
+        } else if (validUp) {
+            return checkUp;
+        } else if (validDown) {
+            return checkDown;
+        }
+        
+        if (checkUp < 0 && checkDown >= maxSlots) {
+            break; // No available slots
+        }
+        offset++;
+    }
+    return -1;
+}
+
 /**
  * Insert equipment into a rack at the given slot index.
  */
@@ -118,10 +153,8 @@ export function insertIntoRack(rackItem, equipmentItem, slotIndex) {
     const heightU = equipmentItem.data.heightU;
 
     // Check if slots are available
-    for (let i = slotIndex; i < slotIndex + heightU; i++) {
-        if (i >= rackItem.slots.length || rackItem.slots[i] !== null) {
-            return false; // Slots occupied or out of bounds
-        }
+    if (!canInsertIntoRack(rackItem, heightU, slotIndex)) {
+        return false;
     }
 
     // Occupy slots
@@ -187,8 +220,9 @@ export function getSlotAtY(rackEl, localY) {
     const header = rackEl.querySelector('.rack-header');
     const headerH = header ? header.offsetHeight : 0;
     const slotY = localY - headerH;
-    if (slotY < 0) return -1;
-    return Math.floor(slotY / SLOT_HEIGHT);
+    // Allow snapping to slot 0 even if slightly above the header
+    if (slotY < -SLOT_HEIGHT / 2) return -1;
+    return Math.round(slotY / SLOT_HEIGHT);
 }
 
 /**
@@ -210,4 +244,4 @@ export function highlightSlots(rackItem, slotIndex, heightU, show) {
     }
 }
 
-export { SLOT_HEIGHT, RACK_WIDTH };
+export { SLOT_HEIGHT, RACK_WIDTH, canInsertIntoRack, findNearestAvailableSlot };
