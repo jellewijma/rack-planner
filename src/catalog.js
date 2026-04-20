@@ -83,7 +83,8 @@ export class Catalog {
       `;
             el.addEventListener('pointerdown', (e) => {
                 if (e.button !== 0) return;
-                e.preventDefault();
+                // Allow touch scrolling to continue
+                // e.preventDefault();
                 if (this.onPointerDownItem) {
                     this.onPointerDownItem(item, e);
                 } else if (this.onAddItem) {

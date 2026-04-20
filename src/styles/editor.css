@@ -145,6 +145,7 @@ body:has(.editor-page) {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    touch-action: none;
 }
 
 /* Checkerboard pattern for transparency */
@@ -221,6 +222,7 @@ body:has(.editor-page) {
     inset: 0;
     z-index: 10;
     pointer-events: none;
+    touch-action: none;
 }
 
 .mounting-interactive.hidden {
@@ -338,6 +340,7 @@ body:has(.editor-page) {
     position: absolute;
     inset: 0;
     z-index: 20;
+    touch-action: none;
 }
 
 .crop-overlay.hidden {

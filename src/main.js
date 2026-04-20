@@ -80,9 +80,9 @@ catalog.onPointerDownItem = (itemData, e) => {
         if (catalogDragInfo.dragStarted) return;
 
         const dx = moveEvent.clientX - catalogDragInfo.startX;
-        const dy = moveEvent.clientY - catalogDragInfo.startY;
-
-        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+        // For catalog items, we only want to trigger drag on horizontal movement
+        // to allow native vertical scrolling on touch devices.
+        if (Math.abs(dx) > 5) {
             catalogDragInfo.dragStarted = true;
 
             const canvasPos = canvas.screenToCanvas(moveEvent.clientX, moveEvent.clientY);

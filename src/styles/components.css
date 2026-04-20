@@ -86,6 +86,7 @@
     background: var(--canvas-bg);
     z-index: var(--z-canvas);
     cursor: grab;
+    touch-action: none;
 }
 
 #canvas-viewport.is-panning {
@@ -180,6 +181,7 @@
     justify-content: center;
     padding: var(--space-md) 0 var(--space-sm);
     cursor: grab;
+    touch-action: none;
 }
 
 .handle-bar {
@@ -282,6 +284,7 @@
     cursor: pointer;
     transition: all var(--transition-fast);
     border: 1px solid transparent;
+    touch-action: pan-y;
 }
 
 .equipment-item:hover {
@@ -520,6 +523,7 @@
     cursor: grab;
     user-select: none;
     transition: box-shadow var(--transition-fast);
+    touch-action: none;
 }
 
 .canvas-item:active {
