@@ -8,6 +8,7 @@ export default defineConfig({
             input: {
                 main: resolve(__dirname, 'index.html'),
                 editor: resolve(__dirname, 'editor.html'),
+                rackeditor: resolve(__dirname, 'rack-editor.html'),
             },
         },
     },

@@ -1110,3 +1110,55 @@
         left: calc(320px + (100vw - 320px) / 2);
     }
 }
+
+/* ===== CUSTOM RACKS ===== */
+.rack-enclosure.is-custom-rack {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.rack-enclosure.is-custom-rack.selected .custom-rack-bg {
+    box-shadow: var(--shadow-md), 0 0 0 2px var(--accent), var(--shadow-glow);
+}
+
+.custom-rack-bg-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 340px; /* RACK_WIDTH */
+    /* Height is dynamic depending on slots */
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden; /* crop the image to the calibration bounds actually wait, if we crop it we miss the wings */
+    overflow: visible; /* we want to see the whole rack image */
+}
+
+.custom-rack-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* Scale and translate set via inline CSS */
+    border-radius: var(--radius-md); /* a slight curve */
+}
+
+/* Hide structural borders of rails for custom racks to let image shine */
+.is-custom-rack .rack-slot {
+    border-bottom-color: rgba(255,255,255,0.05); /* very faint */
+}
+.is-custom-rack .rack-slot-rail {
+    background: rgba(0,0,0,0.5); /* translucent rails */
+    border-radius: 2px;
+}
+.is-custom-rack .rack-header.custom-rack-header {
+    position: absolute;
+    top: -24px;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.6);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+    z-index: 10;
+}

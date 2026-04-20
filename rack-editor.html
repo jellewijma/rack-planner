@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Rack Editor — Upload, process, and add custom flightcase racks to your catalog." />
+  <title>Rack Editor — RackPlanner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="editor-page">
+
+    <!-- Header -->
+    <header class="editor-header">
+      <div class="editor-header-left">
+        <a href="index.html" class="editor-back" id="back-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Planner
+        </a>
+        <div class="editor-title">
+          <span class="brand-bold">RACK</span><span class="brand-light">PLANNER</span>
+          <span> · Rack Editor</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="editor-content">
+      <div class="editor-grid">
+
+        <!-- Step 1: Rack Details -->
+        <div class="editor-card" id="card-details">
+          <div class="editor-card-header">
+            <h2><span class="step-badge">1</span> Rack Details</h2>
+          </div>
+          <div class="editor-card-body">
+            <div class="details-grid">
+              <div class="form-group span-2">
+                <label for="eq-name">Name / Model</label>
+                <input type="text" id="eq-name" placeholder="e.g. 4U Studio Rack" />
+              </div>
+              <div class="form-group span-2">
+                <label for="eq-brand">Brand / Maker</label>
+                <input type="text" id="eq-brand" placeholder="e.g. SKB" />
+              </div>
+              <div class="form-group">
+                <label for="eq-height">Height (U)</label>
+                <select id="eq-height">
+                  <option value="2">2U</option>
+                  <option value="3">3U</option>
+                  <option value="4" selected>4U</option>
+                  <option value="6">6U</option>
+                  <option value="8">8U</option>
+                  <option value="10">10U</option>
+                  <option value="12">12U</option>
+                  <option value="16">16U</option>
+                  <option value="20">20U</option>
+                  <option value="24">24U</option>
+                </select>
+              </div>
+              <div class="form-group span-2">
+                <label for="eq-description">Description</label>
+                <input type="text" id="eq-description" placeholder="e.g. Molded flight case" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Rack Image -->
+        <div class="editor-card" id="card-front">
+          <div class="editor-card-header">
+            <h2><span class="step-badge">2</span> Rack Image</h2>
+          </div>
+          <div class="editor-card-body">
+            <div class="image-workspace">
+              <!-- Canvas Area -->
+              <div class="image-canvas-area" id="front-canvas-area">
+                <div class="image-dropzone-full" id="front-dropzone">
+                  <svg class="drop-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <div class="drop-text"><strong>Drop rack image</strong> or click to browse</div>
+                  <input type="file" id="front-file-input" accept="image/*" />
+                </div>
+                <!-- Main Canvas -->
+                <canvas id="front-canvas" style="display:none;"></canvas>
+              </div>
+
+              <!-- Tools Panel -->
+              <div class="image-tools">
+                <div class="tool-group">
+                  <div class="tool-group-title">Background</div>
+                  <button class="tool-btn" id="btn-remove-bg" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 18"/><path d="M3 7h4l2.5 3h8.5"/><path d="M3 17h18"/></svg>
+                    Auto Remove Background
+                  </button>
+                  <div class="tool-slider">
+                    <label>Tolerance <span id="tolerance-value">30</span></label>
+                    <input type="range" id="bg-tolerance" min="5" max="80" value="30" />
+                  </div>
+                  <button class="tool-btn" id="btn-pick-bg" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                    Click to Remove Color
+                  </button>
+                </div>
+
+                <div class="tool-group">
+                  <div class="tool-group-title">Rails Calibration</div>
+                  <button class="tool-btn" id="btn-calibrate" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                    Place Rack Rails
+                  </button>
+                </div>
+
+                <div class="tool-group">
+                  <div class="tool-group-title">Image</div>
+                  <button class="tool-btn" id="btn-crop" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+                    Crop Image
+                  </button>
+                  <button class="tool-btn" id="btn-reset-front" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                    Reset to Original
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="editor-footer">
+      <a href="index.html" class="btn-editor-secondary">Cancel</a>
+      <button class="btn-editor-primary" id="btn-save-rack">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save to Catalog
+      </button>
+    </footer>
+
+    <!-- Processing Overlay -->
+    <div class="processing-overlay hidden" id="processing-overlay">
+      <div class="processing-card">
+        <div class="processing-spinner"></div>
+        <span id="processing-text">Processing image...</span>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="editor-toast hidden" id="editor-toast"></div>
+
+  </div>
+
+  <script type="module" src="/src/rack-editor-main.js"></script>
+</body>
+</html>

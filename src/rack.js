@@ -23,11 +23,40 @@ export function createRackElement(rackData, x, y) {
     // Header
     const header = document.createElement('div');
     header.className = 'rack-header';
+    if (rackData.isUploadRack) {
+        header.classList.add('custom-rack-header');
+    }
     header.innerHTML = `
     <span class="rack-header-name">${rackData.name}</span>
     <span>${rackData.heightU}U</span>
   `;
     el.appendChild(header);
+
+    if (rackData.isUploadRack && rackData.calibration) {
+        el.classList.add('is-custom-rack');
+        const c = rackData.calibration;
+        const imgW = RACK_WIDTH / c.w;
+        const imgH = (rackData.heightU * SLOT_HEIGHT) / c.h;
+        const left = -(imgW * c.x);
+        const top = -(imgH * c.y);
+
+        const img = document.createElement('img');
+        const imageSrc = rackData.imageDataUrl
+            ? rackData.imageDataUrl
+            : rackData.image ? `${import.meta.env.BASE_URL}images/equipment/${rackData.image}` : null;
+        img.src = imageSrc;
+        img.className = 'custom-rack-bg';
+        img.draggable = false;
+        img.style.width = `${imgW}px`;
+        img.style.height = `${imgH}px`;
+        img.style.left = `${left}px`;
+        img.style.top = `${top}px`;
+        
+        const imgWrapper = document.createElement('div');
+        imgWrapper.className = 'custom-rack-bg-wrapper';
+        imgWrapper.appendChild(img);
+        el.appendChild(imgWrapper);
+    }
 
     // Slots container
     const slotsContainer = document.createElement('div');
