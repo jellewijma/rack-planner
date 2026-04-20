@@ -244,4 +244,4 @@ export function highlightSlots(rackItem, slotIndex, heightU, show) {
     }
 }
 
-export { SLOT_HEIGHT, RACK_WIDTH, canInsertIntoRack, findNearestAvailableSlot };
+export { SLOT_HEIGHT, RACK_WIDTH };
