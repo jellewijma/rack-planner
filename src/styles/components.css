@@ -580,6 +580,15 @@
     color: #ff7474;
     font-weight: 600;
 }
+
+.rack-header-meta.is-near-power {
+    color: #ffa45b;
+}
+
+.rack-header-meta.is-over-power {
+    color: #ff7474;
+    font-weight: 700;
+}
 .rack-header-name {
     font-weight: 600;
     text-transform: uppercase;
