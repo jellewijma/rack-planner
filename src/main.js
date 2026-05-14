@@ -304,25 +304,12 @@ function updateRackCapacityBadge(rackItem) {
     const used = rackItem.slots ? rackItem.slots.filter(slot => slot !== null).length : 0;
     const free = Math.max(0, total - used);
 
-    const slotIds = Array.isArray(rackItem.slots) ? rackItem.slots.filter(Boolean) : [];
-    const powerUsedW = slotIds.reduce((sum, eqId) => {
-        const eq = items.get(eqId);
-        if (!eq || !eq.data?.power?.required) return sum;
-        return sum + (eq.data.power.watts || 0);
-    }, 0);
-    const powerCapacityW = rackItem.data.powerCapacityW || 2000;
-    const powerPct = powerCapacityW > 0 ? Math.round((powerUsedW / powerCapacityW) * 100) : 0;
-
     const metaEl = rackItem.el.querySelector('.rack-header-meta');
     if (!metaEl) return;
 
-    metaEl.textContent = `${total}U · ${free}U free · ${powerUsedW}W`;
+    metaEl.textContent = `${total}U · ${free}U free`;
     metaEl.classList.toggle('is-near-full', free <= 2);
     metaEl.classList.toggle('is-full', free === 0);
-    metaEl.classList.toggle('is-near-power', powerPct >= 85 && powerPct < 100);
-    metaEl.classList.toggle('is-over-power', powerPct >= 100);
-    metaEl.title = `Power ${powerUsedW}W / ${powerCapacityW}W (${powerPct}%)`;
-    refreshPowerDashboard();
 }
 
 function refreshAllRackCapacityBadges() {
