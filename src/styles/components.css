@@ -567,6 +567,19 @@
     cursor: grab;
 }
 
+
+.rack-header-meta {
+    transition: color var(--transition-fast);
+}
+
+.rack-header-meta.is-near-full {
+    color: #f6c453;
+}
+
+.rack-header-meta.is-full {
+    color: #ff7474;
+    font-weight: 600;
+}
 .rack-header-name {
     font-weight: 600;
     text-transform: uppercase;
