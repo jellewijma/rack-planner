@@ -126,6 +126,8 @@ drag.onDragMove = (item, x, y, mode) => {
         const rackItem = items.get(item.parentRack);
         if (rackItem) {
             removeFromRack(rackItem, item);
+            updateRackCapacityBadge(rackItem);
+            updateRackCapacityBadge(rackItem);
 
             // Convert to standalone
             item.el.className = 'canvas-item standalone-equipment is-dragging selected';
@@ -224,6 +226,17 @@ drag.onDragEnd = (item, cx, cy) => {
                         if (success) {
                             showToast(`${item.data.name} → Slot ${slotIdx + 1}`);
                             placedInRack = true;
+                            updateRackCapacityBadge(rackItem);
+                            const powerUsedW = rackItem.slots
+                                .filter(Boolean)
+                                .reduce((sum, eqId) => {
+                                    const eq = items.get(eqId);
+                                    return sum + (eq?.data?.power?.required ? (eq.data.power.watts || 0) : 0);
+                                }, 0);
+                            const powerCapacityW = rackItem.data.powerCapacityW || 2000;
+                            if (powerUsedW > powerCapacityW) {
+                                showToast(`⚠ ${rackItem.data.name} exceeds power budget (${powerUsedW}W/${powerCapacityW}W)`, 'error');
+                            }
                         }
                     }
                 }
@@ -236,10 +249,12 @@ drag.onDragEnd = (item, cx, cy) => {
                 const originalRack = items.get(drag.dragStartRack);
                 if (drag.dragStartSlot != null && canInsertIntoRack(originalRack, item.data.heightU, drag.dragStartSlot)) {
                     insertIntoRack(originalRack, item, drag.dragStartSlot);
+                    updateRackCapacityBadge(originalRack);
                 } else {
                     let slotIdx = findNearestAvailableSlot(originalRack, item.data.heightU, 0);
                     if (slotIdx >= 0) {
                         insertIntoRack(originalRack, item, slotIdx);
+                        updateRackCapacityBadge(originalRack);
                     }
                 }
             } else if (drag.dragStartX != null) {
@@ -275,9 +290,78 @@ function addItemToCanvas(itemData, x, y) {
 
     items.set(item.id, item);
     canvasEl.appendChild(item.el);
+    if (item.el.dataset.type === 'rack') {
+        updateRackCapacityBadge(item);
+    }
     return item;
 }
 
+
+
+function updateRackCapacityBadge(rackItem) {
+    if (!rackItem || rackItem.el.dataset.type !== 'rack') return;
+    const total = rackItem.data.heightU || rackItem.slots?.length || 0;
+    const used = rackItem.slots ? rackItem.slots.filter(slot => slot !== null).length : 0;
+    const free = Math.max(0, total - used);
+
+    const slotIds = Array.isArray(rackItem.slots) ? rackItem.slots.filter(Boolean) : [];
+    const powerUsedW = slotIds.reduce((sum, eqId) => {
+        const eq = items.get(eqId);
+        if (!eq || !eq.data?.power?.required) return sum;
+        return sum + (eq.data.power.watts || 0);
+    }, 0);
+    const powerCapacityW = rackItem.data.powerCapacityW || 2000;
+    const powerPct = powerCapacityW > 0 ? Math.round((powerUsedW / powerCapacityW) * 100) : 0;
+
+    const metaEl = rackItem.el.querySelector('.rack-header-meta');
+    if (!metaEl) return;
+
+    metaEl.textContent = `${total}U · ${free}U free · ${powerUsedW}W`;
+    metaEl.classList.toggle('is-near-full', free <= 2);
+    metaEl.classList.toggle('is-full', free === 0);
+    metaEl.classList.toggle('is-near-power', powerPct >= 85 && powerPct < 100);
+    metaEl.classList.toggle('is-over-power', powerPct >= 100);
+    metaEl.title = `Power ${powerUsedW}W / ${powerCapacityW}W (${powerPct}%)`;
+    refreshPowerDashboard();
+}
+
+function refreshAllRackCapacityBadges() {
+    items.forEach((item) => {
+        if (item.el.dataset.type === 'rack') {
+            updateRackCapacityBadge(item);
+        }
+    });
+    refreshPowerDashboard();
+}
+
+function refreshPowerDashboard() {
+    const equipment = [...items.values()].filter(item => item.el.dataset.type === 'equipment');
+    const racks = [...items.values()].filter(item => item.el.dataset.type === 'rack');
+
+    const totalPower = equipment.reduce((sum, eq) => sum + (eq.data?.power?.required ? (eq.data.power.watts || 0) : 0), 0);
+    const unracked = equipment.filter(eq => !eq.parentRack).length;
+    const overbudgetRacks = racks.filter((rack) => {
+        const rackPower = (rack.slots || [])
+            .filter(Boolean)
+            .reduce((sum, eqId) => {
+                const eq = items.get(eqId);
+                return sum + (eq?.data?.power?.required ? (eq.data.power.watts || 0) : 0);
+            }, 0);
+        const capacity = rack.data.powerCapacityW || 2000;
+        return rackPower > capacity;
+    }).length;
+
+    const totalEqEl = document.getElementById('dash-total-equipment');
+    const totalPowerEl = document.getElementById('dash-total-power');
+    const unrackedEl = document.getElementById('dash-unracked');
+    const overbudgetEl = document.getElementById('dash-overbudget');
+    if (!totalEqEl || !totalPowerEl || !unrackedEl || !overbudgetEl) return;
+
+    totalEqEl.textContent = String(equipment.length);
+    totalPowerEl.textContent = String(totalPower);
+    unrackedEl.textContent = String(unracked);
+    overbudgetEl.textContent = String(overbudgetRacks);
+}
 // ─── Duplicate item ─────────────────────────────────────
 function duplicateItem(item) {
     pushHistorySnapshot();
@@ -297,6 +381,7 @@ function deleteItem(item) {
             const eq = items.get(eqId);
             if (eq) {
                 removeFromRack(item, eq);
+                updateRackCapacityBadge(item);
                 eq.el.remove();
                 items.delete(eqId);
             }
@@ -308,6 +393,7 @@ function deleteItem(item) {
         const rackItem = items.get(item.parentRack);
         if (rackItem) {
             removeFromRack(rackItem, item);
+            updateRackCapacityBadge(rackItem);
         }
     }
 
@@ -375,6 +461,77 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
 
 
 
+
+function csvEscape(value) {
+    const text = String(value ?? '');
+    if (text.includes(',') || text.includes('"') || text.includes('\n')) {
+        return `"${text.replaceAll('"', '""')}"`;
+    }
+    return text;
+}
+
+function exportBomCsv() {
+    const equipment = [...items.values()].filter(item => item.el.dataset.type === 'equipment');
+    if (equipment.length === 0) {
+        showToast('No equipment to export', 'error');
+        return;
+    }
+
+    const grouped = new Map();
+    equipment.forEach((eq) => {
+        const rackName = eq.parentRack && items.has(eq.parentRack)
+            ? (items.get(eq.parentRack).data?.name || 'Rack')
+            : 'Unracked';
+        const slotLabel = eq.slotIndex != null ? `Slot ${eq.slotIndex + 1}` : '-';
+        const key = `${eq.data.brand || 'Unknown'}::${eq.data.name || 'Unnamed'}::${eq.data.heightU || 0}::${rackName}`;
+        if (!grouped.has(key)) {
+            grouped.set(key, {
+                brand: eq.data.brand || 'Unknown',
+                name: eq.data.name || 'Unnamed',
+                heightU: eq.data.heightU || 0,
+                category: eq.data.category || '',
+                watts: eq.data.power?.required ? (eq.data.power.watts || 0) : 0,
+                rackName,
+                slots: new Set(),
+                qty: 0,
+            });
+        }
+        const entry = grouped.get(key);
+        entry.qty += 1;
+        entry.slots.add(slotLabel);
+    });
+
+    const rows = [['Brand', 'Model', 'Qty', 'HeightU', 'Category', 'Rack', 'Slots', 'WattsEach', 'TotalWatts']];
+    let grandTotalWatts = 0;
+    [...grouped.values()]
+        .sort((a, b) => a.rackName.localeCompare(b.rackName) || a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name))
+        .forEach((entry) => {
+            const totalWatts = entry.watts * entry.qty;
+            grandTotalWatts += totalWatts;
+            rows.push([
+                entry.brand,
+                entry.name,
+                entry.qty,
+                entry.heightU,
+                entry.category,
+                entry.rackName,
+                [...entry.slots].sort().join(' | '),
+                entry.watts,
+                totalWatts,
+            ]);
+        });
+
+    rows.push([]);
+    rows.push(['TOTAL', '', '', '', '', '', '', '', grandTotalWatts]);
+
+    const csv = rows.map((row) => row.map(csvEscape).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    downloadDataUrl(url, `rack-bom-${new Date().toISOString().slice(0, 10)}.csv`);
+    URL.revokeObjectURL(url);
+    showToast('BOM exported as CSV', 'success');
+}
+
 // ─── Toolbar Actions ────────────────────────────────────
 document.getElementById('btn-zoom-in').addEventListener('click', () => canvas.zoomIn());
 document.getElementById('btn-zoom-out').addEventListener('click', () => canvas.zoomOut());
@@ -409,6 +566,8 @@ document.getElementById('btn-export').addEventListener('click', async () => {
     }
 });
 
+document.getElementById('btn-export-bom').addEventListener('click', exportBomCsv);
+
 // Context menu actions
 document.getElementById('ctx-duplicate').addEventListener('click', () => {
     const item = drag.getSelectedItem();
@@ -422,6 +581,26 @@ document.getElementById('ctx-delete').addEventListener('click', () => {
 
 // ─── Custom Items ───────────────────────────────────────
 let customType = 'equipment';
+const STARTER_TEMPLATES = {
+    studio: {
+        name: 'Studio Rack',
+        items: [
+            { name: 'Studio Rack', brand: 'Template', category: 'rack', heightU: 16, color: '#2e3440' },
+            { name: 'Power Conditioner', brand: 'Template', category: 'power', heightU: 1, color: '#3b4252', power: { required: false } },
+            { name: 'Audio Interface', brand: 'Template', category: 'interface', heightU: 1, color: '#5e81ac', power: { required: true, watts: 40 } },
+            { name: 'Preamps', brand: 'Template', category: 'preamp', heightU: 2, color: '#4c566a', power: { required: true, watts: 60 } },
+        ],
+    },
+    live: {
+        name: 'Live Rack',
+        items: [
+            { name: 'Live Rack', brand: 'Template', category: 'rack', heightU: 20, color: '#2e3440' },
+            { name: 'Power Conditioner', brand: 'Template', category: 'power', heightU: 1, color: '#3b4252', power: { required: false } },
+            { name: 'Wireless Receivers', brand: 'Template', category: 'wireless', heightU: 2, color: '#bf616a', power: { required: true, watts: 75 } },
+            { name: 'Digital Mixer Stagebox', brand: 'Template', category: 'mixer', heightU: 3, color: '#a3be8c', power: { required: true, watts: 120 } },
+        ],
+    },
+};
 
 document.getElementById('custom-tab-equipment').addEventListener('click', (e) => {
     customType = 'equipment';
@@ -456,6 +635,48 @@ document.getElementById('btn-add-custom').addEventListener('click', () => {
     scheduleAutoSave();
 });
 
+function addStarterTemplate(templateKey) {
+    const template = STARTER_TEMPLATES[templateKey];
+    if (!template) return;
+    pushHistorySnapshot();
+
+    const center = canvas.getViewportCenter();
+    const rackX = canvas.snapToGrid(center.x - 180);
+    const rackY = canvas.snapToGrid(center.y - 140);
+    const rackData = {
+        id: `template-rack-${Date.now()}`,
+        name: template.items[0].name,
+        brand: template.items[0].brand,
+        category: 'rack',
+        heightU: template.items[0].heightU,
+        color: template.items[0].color,
+        description: `${template.name} starter`,
+    };
+    const rack = addItemToCanvas(rackData, rackX, rackY);
+
+    let slotCursor = 0;
+    template.items.slice(1).forEach((itemData) => {
+        const eqData = {
+            id: `template-eq-${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
+            ...itemData,
+            description: `${template.name} starter`,
+        };
+        const eq = addItemToCanvas(eqData, rackX + 380, rackY + (slotCursor * SLOT_HEIGHT));
+        const inserted = insertIntoRack(rack, eq, slotCursor);
+        if (inserted) {
+            slotCursor += eqData.heightU;
+        }
+    });
+
+    updateRackCapacityBadge(rack);
+    refreshPowerDashboard();
+    showToast(`${template.name} template added`, 'success');
+    scheduleAutoSave();
+}
+
+document.getElementById('btn-template-studio').addEventListener('click', () => addStarterTemplate('studio'));
+document.getElementById('btn-template-live').addEventListener('click', () => addStarterTemplate('live'));
+
 // ─── Clear Canvas ───────────────────────────────────────
 document.getElementById('btn-clear-all').addEventListener('click', () => {
     if (items.size === 0) return;
@@ -465,6 +686,7 @@ document.getElementById('btn-clear-all').addEventListener('click', () => {
     drag.deselect();
     hideContextMenu();
     clearState();
+    refreshPowerDashboard();
     showToast('Canvas cleared');
 });
 
@@ -644,6 +866,7 @@ function restoreState(state) {
             const rackItem = items.get(rackMap[s.parentRack]);
             if (rackItem && s.slotIndex != null) {
                 insertIntoRack(rackItem, item, s.slotIndex);
+                updateRackCapacityBadge(rackItem);
             }
         }
     });
@@ -657,6 +880,8 @@ const saved = loadState();
 if (saved) {
     restoreState(saved);
 }
+
+refreshAllRackCapacityBadges();
 
 // ─── Done ───────────────────────────────────────────────
 console.log('🎛️ RackPlanner initialized');
