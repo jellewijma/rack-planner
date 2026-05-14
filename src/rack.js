@@ -28,7 +28,7 @@ export function createRackElement(rackData, x, y) {
     }
     header.innerHTML = `
     <span class="rack-header-name">${rackData.name}</span>
-    <span>${rackData.heightU}U</span>
+    <span class="rack-header-meta">${rackData.heightU}U</span>
   `;
     el.appendChild(header);
 

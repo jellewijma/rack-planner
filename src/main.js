@@ -126,6 +126,8 @@ drag.onDragMove = (item, x, y, mode) => {
         const rackItem = items.get(item.parentRack);
         if (rackItem) {
             removeFromRack(rackItem, item);
+            updateRackCapacityBadge(rackItem);
+            updateRackCapacityBadge(rackItem);
 
             // Convert to standalone
             item.el.className = 'canvas-item standalone-equipment is-dragging selected';
@@ -224,6 +226,7 @@ drag.onDragEnd = (item, cx, cy) => {
                         if (success) {
                             showToast(`${item.data.name} → Slot ${slotIdx + 1}`);
                             placedInRack = true;
+                            updateRackCapacityBadge(rackItem);
                         }
                     }
                 }
@@ -236,10 +239,12 @@ drag.onDragEnd = (item, cx, cy) => {
                 const originalRack = items.get(drag.dragStartRack);
                 if (drag.dragStartSlot != null && canInsertIntoRack(originalRack, item.data.heightU, drag.dragStartSlot)) {
                     insertIntoRack(originalRack, item, drag.dragStartSlot);
+                    updateRackCapacityBadge(originalRack);
                 } else {
                     let slotIdx = findNearestAvailableSlot(originalRack, item.data.heightU, 0);
                     if (slotIdx >= 0) {
                         insertIntoRack(originalRack, item, slotIdx);
+                        updateRackCapacityBadge(originalRack);
                     }
                 }
             } else if (drag.dragStartX != null) {
@@ -275,9 +280,35 @@ function addItemToCanvas(itemData, x, y) {
 
     items.set(item.id, item);
     canvasEl.appendChild(item.el);
+    if (item.el.dataset.type === 'rack') {
+        updateRackCapacityBadge(item);
+    }
     return item;
 }
 
+
+
+function updateRackCapacityBadge(rackItem) {
+    if (!rackItem || rackItem.el.dataset.type !== 'rack') return;
+    const total = rackItem.data.heightU || rackItem.slots?.length || 0;
+    const used = rackItem.slots ? rackItem.slots.filter(slot => slot !== null).length : 0;
+    const free = Math.max(0, total - used);
+
+    const metaEl = rackItem.el.querySelector('.rack-header-meta');
+    if (!metaEl) return;
+
+    metaEl.textContent = `${total}U · ${free}U free`;
+    metaEl.classList.toggle('is-near-full', free <= 2);
+    metaEl.classList.toggle('is-full', free === 0);
+}
+
+function refreshAllRackCapacityBadges() {
+    items.forEach((item) => {
+        if (item.el.dataset.type === 'rack') {
+            updateRackCapacityBadge(item);
+        }
+    });
+}
 // ─── Duplicate item ─────────────────────────────────────
 function duplicateItem(item) {
     pushHistorySnapshot();
@@ -297,6 +328,7 @@ function deleteItem(item) {
             const eq = items.get(eqId);
             if (eq) {
                 removeFromRack(item, eq);
+                updateRackCapacityBadge(item);
                 eq.el.remove();
                 items.delete(eqId);
             }
@@ -308,6 +340,7 @@ function deleteItem(item) {
         const rackItem = items.get(item.parentRack);
         if (rackItem) {
             removeFromRack(rackItem, item);
+            updateRackCapacityBadge(rackItem);
         }
     }
 
@@ -644,6 +677,7 @@ function restoreState(state) {
             const rackItem = items.get(rackMap[s.parentRack]);
             if (rackItem && s.slotIndex != null) {
                 insertIntoRack(rackItem, item, s.slotIndex);
+                updateRackCapacityBadge(rackItem);
             }
         }
     });
@@ -657,6 +691,8 @@ const saved = loadState();
 if (saved) {
     restoreState(saved);
 }
+
+refreshAllRackCapacityBadges();
 
 // ─── Done ───────────────────────────────────────────────
 console.log('🎛️ RackPlanner initialized');
