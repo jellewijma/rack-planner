@@ -28,6 +28,12 @@ import equipmentData from './data/equipment.json';
 const items = new Map();   // id → item object
 let autoSaveEnabled = true;
 let autoSaveTimer = null;
+const history = {
+    undo: [],
+    redo: [],
+    max: 100,
+    isApplying: false,
+};
 
 // ─── DOM ────────────────────────────────────────────────
 const viewportEl = document.getElementById('canvas-viewport');
@@ -274,6 +280,7 @@ function addItemToCanvas(itemData, x, y) {
 
 // ─── Duplicate item ─────────────────────────────────────
 function duplicateItem(item) {
+    pushHistorySnapshot();
     const newItem = addItemToCanvas(item.data, item.x + 30, item.y + 30);
     showToast(`Duplicated ${item.data.name}`);
     scheduleAutoSave();
@@ -282,6 +289,7 @@ function duplicateItem(item) {
 
 // ─── Delete item ────────────────────────────────────────
 function deleteItem(item) {
+    pushHistorySnapshot();
     // If it's a rack, remove all equipment inside it first
     if (item.el.dataset.type === 'rack' && item.slots) {
         const placed = new Set(item.slots.filter(s => s !== null));
@@ -382,6 +390,7 @@ document.getElementById('btn-save').addEventListener('click', () => {
 document.getElementById('btn-load').addEventListener('click', () => {
     const state = loadState();
     if (state) {
+        pushHistorySnapshot();
         restoreState(state);
         showToast('Layout loaded!', 'success');
     } else {
@@ -427,6 +436,7 @@ document.getElementById('custom-tab-rack').addEventListener('click', (e) => {
 });
 
 document.getElementById('btn-add-custom').addEventListener('click', () => {
+    pushHistorySnapshot();
     const name = document.getElementById('custom-name').value.trim() || 'Custom Item';
     const heightU = parseInt(document.getElementById('custom-height').value) || 1;
     const color = document.getElementById('custom-color').value;
@@ -449,6 +459,7 @@ document.getElementById('btn-add-custom').addEventListener('click', () => {
 // ─── Clear Canvas ───────────────────────────────────────
 document.getElementById('btn-clear-all').addEventListener('click', () => {
     if (items.size === 0) return;
+    pushHistorySnapshot();
     items.forEach(item => item.el.remove());
     items.clear();
     drag.deselect();
@@ -516,6 +527,18 @@ document.addEventListener('keydown', (e) => {
         const item = drag.getSelectedItem();
         if (item) duplicateItem(item);
     }
+
+    // Ctrl+Z undo
+    if (e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        undo();
+    }
+
+    // Ctrl+Y or Ctrl+Shift+Z redo
+    if ((e.ctrlKey && e.key.toLowerCase() === 'y') || (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'z')) {
+        e.preventDefault();
+        redo();
+    }
 });
 
 // ─── Toast ──────────────────────────────────────────────
@@ -536,6 +559,59 @@ function scheduleAutoSave() {
     autoSaveTimer = setTimeout(() => {
         saveState(items, canvas.getState());
     }, 2000);
+}
+
+function getSnapshot() {
+    return {
+        canvas: canvas.getState(),
+        items: [...items.values()].map(item => ({
+            id: item.id,
+            type: item.el.dataset.type,
+            data: item.data,
+            x: item.x,
+            y: item.y,
+            parentRack: item.parentRack || null,
+            slotIndex: item.slotIndex != null ? item.slotIndex : null,
+            slots: item.slots ? [...item.slots] : null,
+        })),
+    };
+}
+
+function pushHistorySnapshot() {
+    if (history.isApplying) return;
+    history.undo.push(getSnapshot());
+    if (history.undo.length > history.max) history.undo.shift();
+    history.redo = [];
+}
+
+function applySnapshot(snapshot) {
+    history.isApplying = true;
+    restoreState(snapshot);
+    history.isApplying = false;
+}
+
+function undo() {
+    if (history.undo.length === 0) {
+        showToast('Nothing to undo');
+        return;
+    }
+    const current = getSnapshot();
+    history.redo.push(current);
+    const previous = history.undo.pop();
+    applySnapshot(previous);
+    showToast('Undid last action');
+}
+
+function redo() {
+    if (history.redo.length === 0) {
+        showToast('Nothing to redo');
+        return;
+    }
+    const current = getSnapshot();
+    history.undo.push(current);
+    const next = history.redo.pop();
+    applySnapshot(next);
+    showToast('Redid action');
 }
 
 // ─── Restore State ──────────────────────────────────────
@@ -572,6 +648,9 @@ function restoreState(state) {
         }
     });
 }
+
+document.getElementById('btn-undo').addEventListener('click', undo);
+document.getElementById('btn-redo').addEventListener('click', redo);
 
 // ─── Init: try loading saved state ──────────────────────
 const saved = loadState();

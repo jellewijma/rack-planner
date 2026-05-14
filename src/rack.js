@@ -137,6 +137,16 @@ export function createEquipmentElement(eqData, x, y) {
     `;
     }
 
+    const ioInputs = Array.isArray(eqData.io?.inputs) ? eqData.io.inputs.length : 0;
+    const ioOutputs = Array.isArray(eqData.io?.outputs) ? eqData.io.outputs.length : 0;
+    const powerText = eqData.power?.required
+        ? `Power: ${eqData.power.watts || 0}W ${eqData.power.connector || ''}`.trim()
+        : 'Power: none';
+    const metaText = (eqData.power || eqData.io)
+        ? `\n${powerText}\nI/O: ${ioInputs} in · ${ioOutputs} out`
+        : '';
+    el.title = `${eqData.brand} ${eqData.name} (${eqData.heightU}U)${metaText}`;
+
     return { id, el, data: eqData, x, y, parentRack: null, slotIndex: null };
 }
 
